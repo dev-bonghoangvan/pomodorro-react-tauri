@@ -1,50 +1,46 @@
 {
-  "package": {
-    "productName": "Pomodoro Tauri Pixi",
-    "version": "0.1.0"
-  },
+  "productName": "Pomodoro Tauri Pixi",
+  "version": "0.1.0",
+  "identifier": "com.example.pomodoro_tauri_pixi",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:5173",
-    "distDir": "../dist"
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
   },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "targets": [
-        "msi",
-        "nsis"
-      ],
-      "identifier": "com.example.pomodoro_tauri_pixi",
-      "windows": {
-        "webviewInstallMode": {
-          "type": "embedBootstrapper"
-        }
-      }
-    },
+  "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Pomodoro",
         "width": 400,
-        "height": 600,
+        "height": 700,
+        "minWidth": 280,
+        "minHeight": 60,
         "resizable": true,
         "fullscreen": false,
         "visible": true,
         "decorations": false,
         "alwaysOnTop": true,
         "skipTaskbar": false,
-        "transparent": false
+        "transparent": true
       }
     ],
     "security": {
       "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; media-src 'self' data:;"
-    },
-    "allowlist": {
-      "window": {
-        "all": true,
-        "startDragging": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "msi",
+      "nsis"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
       }
     }
-  }
+  },
+  "plugins": {}
 }

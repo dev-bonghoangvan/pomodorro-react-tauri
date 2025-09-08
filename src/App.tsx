@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Play, Pencil, ChevronUp, ChevronDown, Settings, Maximize2, Minimize2, Timer, Coffee, Clock, Pin, Power, Languages } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { WebviewWindow, appWindow } from '@tauri-apps/api/window'
-import { invoke } from '@tauri-apps/api/tauri'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { invoke } from '@tauri-apps/api/core'
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog'
 import { Label } from './ui/label'
@@ -15,6 +15,11 @@ import quotesData from './quotes/quotes.json'
 import VietnamFlag from './svgs/vietnam.svg'
 // @ts-ignore
 import USAFlag from './svgs/usa.svg'
+import { useWindowSize } from './hooks/useWindowSize'
+import { MiniMode } from './components/MiniMode'
+import { CompactMode } from './components/CompactMode'
+import { TallMode } from './components/TallMode'
+import { FullMode } from './components/FullMode'
 
 function useInterval(callback: () => void, delay: number | null) {
   const saved = useRef(callback)
@@ -45,6 +50,9 @@ export default function App() {
   const [alwaysOnTop, setAlwaysOnTop] = useState(true)
   const [autoStart, setAutoStart] = useState(false)
   const intervalRef = useRef<number | null>(null)
+  
+  // Get window size and display mode
+  const { width, height, mode } = useWindowSize()
 
   useEffect(() => {
     const quoteInterval = setInterval(() => {
@@ -93,14 +101,14 @@ export default function App() {
   useEffect(() => {
     if (timeLeft === 0 && isRunning) {
       // beep sound
-      try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-        const o = ctx.createOscillator(); const g = ctx.createGain()
-        o.connect(g); g.connect(ctx.destination)
-        o.type = 'sine'; o.frequency.value = 880
-        g.gain.value = 0.1; o.start(); setTimeout(()=>{o.stop(); ctx.close()}, 600)
-      } catch {}
-    }
+        try {
+          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+          const o = ctx.createOscillator(); const g = ctx.createGain()
+          o.connect(g); g.connect(ctx.destination)
+          o.type = 'sine'; o.frequency.value = 880
+          g.gain.value = 0.1; o.start(); setTimeout(()=>{o.stop(); ctx.close()}, 600)
+        } catch {}
+      }
   }, [timeLeft, isRunning])
 
   // Window always-on-top toggle via Rust (safer across versions)
@@ -209,389 +217,163 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-4">
-      {/* Custom Drag Area */}
-      <div 
-        className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-r from-blue-500/10 to-purple-500/10 cursor-move z-50 flex items-center justify-center"
-        data-tauri-drag-region
-        onMouseDown={async (e) => {
-          try {
-            await appWindow.startDragging()
-          } catch (error) {
-            console.error('Drag error:', error)
-          }
-        }}
-      >
-        <div className="w-8 h-1 bg-gray-400 rounded-full opacity-50"></div>
-      </div>
-      
-      <motion.div
-        className="max-w-sm mx-auto space-y-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-
-        {/* Main Timer and Background Music Card */}
-        <motion.div
-          layout
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
+    <div 
+      className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm border border-white/10"
+      data-tauri-drag-region
+    >
+      {/* Drag Area - Only show in mini mode */}
+      {mode === 'mini' && (
+        <div 
+          className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 cursor-move z-50 flex items-center justify-center rounded-t-2xl"
+          data-tauri-drag-region
         >
-          <Card className="gradient-card border-2 border-border/50 shadow-xl backdrop-blur-sm">
-            <CardHeader className="pb-4">
-              {/* Top Right Icons */}
-              <div className="flex justify-end gap-2 mb-4">
-                <motion.button
-                  onClick={() => setAlwaysOnTop(!alwaysOnTop)}
-                  className={`p-2 rounded-full transition-colors ${
-                    alwaysOnTop 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title="Always on Top"
-                >
-                  <Pin className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  onClick={() => toggleAutostart(!autoStart)}
-                  className={`p-2 rounded-full transition-colors ${
-                    autoStart 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title="Start with Windows"
-                >
-                  <Power className="w-4 h-4" />
-                </motion.button>
-              </div>
-              
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg border-0">
-                  <TabsTrigger 
-                    value="focus" 
-                    className="text-xs flex items-center gap-1 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-800 text-gray-600 data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none data-[state=inactive]:border-0 data-[state=inactive]:ring-0"
-                  >
-                    {getTabIcon("focus")}
-                    Focus
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="shortBreak" 
-                    className="text-xs flex items-center gap-1 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-800 text-gray-600 data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none data-[state=inactive]:border-0 data-[state=inactive]:ring-0"
-                  >
-                    {getTabIcon("shortBreak")}
-                    Short
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="longBreak" 
-                    className="text-xs flex items-center gap-1 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-800 text-gray-600 data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none data-[state=inactive]:border-0 data-[state=inactive]:ring-0"
-                  >
-                    {getTabIcon("longBreak")}
-                    Long
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </CardHeader>
+          <div className="w-4 h-0.5 bg-gray-400 rounded-full opacity-50"></div>
+        </div>
+      )}
 
-            <CardContent className="space-y-6">
-              {/* Timer Display with Circular Progress */}
-              <div className="text-center relative">
-                <div className="relative w-36 h-36 mx-auto mb-4">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      fill="none"
-                      className="text-muted/30"
-                    />
-                    <motion.circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      stroke="url(#gradient)"
-                      strokeWidth="3"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 45}`}
-                      initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-                      animate={{
-                        strokeDashoffset: 2 * Math.PI * 45 * (getProgress() / 100),
-                      }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                    />
-                    <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#059669" />
-                        <stop offset="100%" stopColor="#10b981" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
+      {/* Render different modes based on window size */}
+          <AnimatePresence mode="wait">
+        {mode === 'mini' && (
+            <motion.div
+            key="mini"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="h-screen"
+          >
+            <MiniMode
+              timeLeft={timeLeft}
+              isRunning={isRunning}
+              activeTab={activeTab}
+              alwaysOnTop={alwaysOnTop}
+              autoStart={autoStart}
+              onStart={handleStart}
+              onPause={handlePause}
+              onNext={handleNext}
+              onToggleAlwaysOnTop={() => setAlwaysOnTop(!alwaysOnTop)}
+              onToggleAutostart={() => toggleAutostart(!autoStart)}
+              getProgress={getProgress}
+              formatTime={formatTime}
+            />
+            </motion.div>
+        )}
 
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      className="text-3xl font-mono font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
-                      key={timeLeft}
-                      initial={{ scale: 1.1 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {formatTime(timeLeft)}
-                    </motion.div>
-                  </div>
-                </div>
+        {mode === 'compact' && (
+          <motion.div
+            key="compact"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="h-screen p-2"
+          >
+            <CompactMode
+              timeLeft={timeLeft}
+              isRunning={isRunning}
+              activeTab={activeTab}
+              alwaysOnTop={alwaysOnTop}
+              autoStart={autoStart}
+              customTimes={customTimes}
+              currentQuote={getCurrentQuote()}
+              isVietnamese={isVietnamese}
+              onStart={handleStart}
+              onPause={handlePause}
+              onNext={handleNext}
+              onToggleAlwaysOnTop={() => setAlwaysOnTop(!alwaysOnTop)}
+              onToggleAutostart={() => toggleAutostart(!autoStart)}
+              onTabChange={setActiveTab}
+              onLanguageToggle={() => setIsVietnamese(!isVietnamese)}
+              getProgress={getProgress}
+              formatTime={formatTime}
+              getTabIcon={getTabIcon}
+            />
+          </motion.div>
+        )}
 
-                {/* Time Settings */}
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <AnimatePresence mode="wait">
-                    {editingTime === activeTab ? (
-                      <motion.div
-                        className="flex items-center gap-2"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                      >
-                        <Input
-                          type="number"
-                          value={tempTime}
-                          onChange={(e) => setTempTime(e.target.value)}
-                          className="w-16 h-8 text-center"
-                          min="1"
-                        />
-                        <span className="text-sm text-muted-foreground">min</span>
-                        <Button
-                          size="sm"
-                          onClick={handleTimeSave}
-                          className="bg-primary text-primary-foreground hover:bg-primary/90"
-                        >
-                          Save
-                        </Button>
-                      </motion.div>
-                    ) : (
-                      <motion.button
-                        onClick={() => handleTimeEdit(activeTab)}
-                        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1 rounded-full hover:bg-muted/50"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                      >
-                        <Settings className="w-3 h-3" />
-                        {customTimes[activeTab as keyof typeof customTimes]} min
-                      </motion.button>
-                    )}
-                  </AnimatePresence>
-                </div>
+        {mode === 'tall' && (
+          <motion.div
+            key="tall"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="h-screen p-4"
+          >
+            <TallMode
+              timeLeft={timeLeft}
+              isRunning={isRunning}
+              currentTab={activeTab}
+              onTabChange={setActiveTab}
+              onPlayPause={isRunning ? handlePause : handleStart}
+              onSkip={handleNext}
+              onReset={() => {
+                setTimeLeft(customTimes[activeTab] * 60)
+                setIsRunning(false)
+              }}
+              alwaysOnTop={alwaysOnTop}
+              onAlwaysOnTopToggle={() => setAlwaysOnTop(!alwaysOnTop)}
+              autoStart={autoStart}
+              onAutoStartToggle={() => toggleAutostart(!autoStart)}
+              onMinimize={() => getCurrentWindow().minimize()}
+              onSettings={() => {}}
+              currentQuote={getCurrentQuote()}
+              isVietnamese={isVietnamese}
+              onLanguageToggle={() => setIsVietnamese(!isVietnamese)}
+              workTime={customTimes.focus}
+              shortBreakTime={customTimes.shortBreak}
+              longBreakTime={customTimes.longBreak}
+              onWorkTimeChange={(value) => setCustomTimes(prev => ({ ...prev, focus: value }))}
+              onShortBreakTimeChange={(value) => setCustomTimes(prev => ({ ...prev, shortBreak: value }))}
+              onLongBreakTimeChange={(value) => setCustomTimes(prev => ({ ...prev, longBreak: value }))}
+            />
+          </motion.div>
+        )}
 
-                {/* Control Buttons */}
-                <div className="flex justify-center gap-3">
-                  <AnimatePresence mode="wait">
-                    {!isRunning ? (
-                      <motion.div
-                        key="start"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                      >
-                        <Button
-                          onClick={handleStart}
-                          size="lg"
-                          className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-base font-semibold shadow-lg"
-                        >
-                          START
-                        </Button>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="pause-next"
-                        className="flex gap-3"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                      >
-                        <Button
-                          onClick={handlePause}
-                          size="lg"
-                          className="bg-white hover:bg-gray-50 text-red-600 border-2 border-gray-200 px-6 py-2 text-sm font-semibold shadow-lg"
-                        >
-                          PAUSE
-                        </Button>
-                        <Button
-                          onClick={handleNext}
-                          size="lg"
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 shadow-lg"
-                        >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7 6v12l10-6z" />
-                            <path d="M17 6h2v12h-2z" />
-                          </svg>
-                        </Button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <motion.div
-                  className="mt-4 text-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  {/* Language Toggle Button */}
-                  <div className="flex justify-center mb-3">
-                    <motion.button
-                      onClick={() => setIsVietnamese(!isVietnamese)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors border-2 ${
-                        isVietnamese 
-                          ? 'bg-emerald-100 border-emerald-500 text-emerald-700' 
-                          : 'bg-blue-100 border-blue-500 text-blue-700'
-                      }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      title={isVietnamese ? "Switch to English" : "Chuyển sang tiếng Việt"}
-                    >
-                      {isVietnamese ? (
-                        // Vietnam Flag
-                        <img src={VietnamFlag} alt="Vietnam Flag" className="w-6 h-4 object-contain" />
-                      ) : (
-                        // USA Flag
-                        <img src={USAFlag} alt="USA Flag" className="w-6 h-4 object-contain" />
-                      )}
-                    </motion.button>
-                  </div>
-
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`${currentQuoteIndex}-${isVietnamese}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.5 }}
-                      className="space-y-2"
-                    >
-                      <p className="text-base text-emerald-600 font-medium">{getCurrentQuote()}</p>
-                      <div className="w-full h-px bg-gradient-to-r from-transparent via-emerald-200 to-transparent" />
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
-              </div>
-
-              {/* Background Music section */}
-              <motion.div
-                className="border-t pt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Background Music</span>
-                    <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                  <div className="flex gap-2">
-                    {/* Settings icon */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <motion.div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Settings className="w-4 h-4" />
-                          </Button>
-                        </motion.div>
-                      </DialogTrigger>
-                      
-                      
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Change YouTube URL</DialogTitle>
-                       
-                       
-                        
-                        
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="youtube-url">YouTube URL</Label>
-                            <Input
-                              id="youtube-url"
-                              value={newYoutubeUrl}
-                              onChange={(e) => setNewYoutubeUrl(e.target.value)}
-                              placeholder="https://www.youtube.com/watch?v=..."
-                            />
-                          </div>
-                          <Button
-                            onClick={handleYouTubeUrlChange}
-                            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                          >
-                            Update URL
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-
-                    {/* Expand/Collapse toggle */}
-                    <motion.div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setIsYouTubeExpanded(!isYouTubeExpanded)}
-                      >
-                        {isYouTubeExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                      </Button>
-                    </motion.div>
-                  </div>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {isYouTubeExpanded ? (
-                    <motion.div
-                      key="youtube-iframe"
-                      className="overflow-hidden rounded-lg"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 150 }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{
-                        duration: 0.4,
-                        ease: [0.4, 0, 0.2, 1],
-                      }}
-                    >
-                      <iframe
-                        src={getYouTubeEmbedUrl(youtubeUrl)}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="motivational-text"
-                      className="text-center py-4"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <p className="text-sm text-muted-foreground italic font-bold">
-                        /ĐỘNG LỰC HỌC TẬP/ "Nếu không hành động thì giấc mơ mãi mãi chỉ là giấc mơ..."
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-
-            </CardContent>
-          </Card>
-        </motion.div>
-
-      </motion.div>
+        {mode === 'full' && (
+          <motion.div
+            key="full"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="h-screen p-4"
+          >
+            <FullMode
+              timeLeft={timeLeft}
+              isRunning={isRunning}
+              activeTab={activeTab}
+              alwaysOnTop={alwaysOnTop}
+              autoStart={autoStart}
+              customTimes={customTimes}
+              currentQuote={getCurrentQuote()}
+              isVietnamese={isVietnamese}
+              isYouTubeExpanded={isYouTubeExpanded}
+              youtubeUrl={youtubeUrl}
+              newYoutubeUrl={newYoutubeUrl}
+              editingTime={editingTime}
+              tempTime={tempTime}
+              onStart={handleStart}
+              onPause={handlePause}
+              onNext={handleNext}
+              onToggleAlwaysOnTop={() => setAlwaysOnTop(!alwaysOnTop)}
+              onToggleAutostart={() => toggleAutostart(!autoStart)}
+              onTabChange={setActiveTab}
+              onLanguageToggle={() => setIsVietnamese(!isVietnamese)}
+              onYouTubeToggle={() => setIsYouTubeExpanded(!isYouTubeExpanded)}
+              onYouTubeUrlChange={handleYouTubeUrlChange}
+              onNewYoutubeUrlChange={setNewYoutubeUrl}
+              onTimeEdit={handleTimeEdit}
+              onTimeSave={handleTimeSave}
+              onTempTimeChange={setTempTime}
+              getProgress={getProgress}
+              formatTime={formatTime}
+              getTabIcon={getTabIcon}
+              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom window styling for rounded corners */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+#root {
+  border-radius: 16px;
+  overflow: hidden;
+  height: 100vh;
+}
+
 :root {
   /* Modern Pomodoro design tokens */
   --background: 0 0% 100%; /* Clean white background */

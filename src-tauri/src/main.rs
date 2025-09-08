@@ -1,9 +1,10 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
-use tauri::Window;
+use tauri::{AppHandle, Manager};
 
 #[tauri::command]
-fn set_always_on_top(window: Window, on: bool) -> Result<(), String> {
+fn set_always_on_top(app: AppHandle, on: bool) -> Result<(), String> {
+  let window = app.get_webview_window("main").ok_or("Window not found")?;
   window.set_always_on_top(on).map_err(|e| e.to_string())
 }
 
