@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro Tauri (Pixi)</title>
+    <style>
+      html, body, #root { height: 100%; margin: 0; background: #ffffff; }
+      /* Drag region for frameless move */
+      .titlebar { -webkit-app-region: drag; app-region: drag; }
+      .no-drag { -webkit-app-region: no-drag; app-region: no-drag; }
+      .container { height: 100%; display: grid; grid-template-rows: 32px 1fr; }
+      .titlebar { background: #f3f4f6; display:flex; align-items:center; padding:0 8px; font-family: system-ui, sans-serif; font-size:12px; color:#374151; }
+      .content { position: relative; }
+      .overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+      .controls { position:absolute; inset:auto 8px 8px 8px; background: rgba(255,255,255,0.9); border:1px solid #e5e7eb; border-radius:12px; padding:8px; display:flex; gap:8px; align-items:center; justify-content:center; pointer-events:auto; font-family: system-ui, sans-serif; }
+      .controls input[type="number"] { width:64px; }
+      .quote { position:absolute; top:48px; left:0; right:0; text-align:center; font-family: ui-serif, Georgia, serif; font-style: italic; color:#6b7280; padding:0 12px; pointer-events:none; }
+      button { padding:6px 10px; border-radius: 8px; border:1px solid #d1d5db; background:#10b981; color:white; cursor:pointer; }
+      button.secondary { background:white; color:#111827; }
+      label { font-size: 12px; color:#374151; display:flex; gap:6px; align-items:center; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

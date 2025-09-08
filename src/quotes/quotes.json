@@ -1,0 +1,642 @@
+[
+  {
+    "en": "Fall seven times and stand up eight.",
+    "vi": "Ngã bảy lần, đứng dậy tám lần."
+  },
+  {
+    "en": "Tough times never last, but tough people do.",
+    "vi": "Thời gian khó khăn không kéo dài, chỉ có con người mạnh mẽ mới bền vững."
+  },
+  {
+    "en": "Pain is temporary, greatness lasts forever.",
+    "vi": "Nỗi đau chỉ là tạm thời, vĩ đại mới là vĩnh cửu."
+  },
+  {
+    "en": "Difficult roads often lead to beautiful destinations.",
+    "vi": "Những con đường khó khăn thường dẫn đến đích đến tươi đẹp."
+  },
+  {
+    "en": "Perseverance is not a long race; it is many short races one after another.",
+    "vi": "Sự kiên trì không phải là một cuộc đua dài, mà là nhiều cuộc đua ngắn nối tiếp nhau."
+  },
+  {
+    "en": "Storms make trees take deeper roots.",
+    "vi": "Bão tố khiến cây phải bén rễ sâu hơn."
+  },
+  {
+    "en": "When you feel like quitting, remember why you started.",
+    "vi": "Khi bạn muốn bỏ cuộc, hãy nhớ lý do bạn bắt đầu."
+  },
+  {
+    "en": "Obstacles are those frightful things you see when you take your eyes off your goal.",
+    "vi": "Chướng ngại vật là những điều đáng sợ bạn thấy khi rời mắt khỏi mục tiêu."
+  },
+  {
+    "en": "Dream big. Start small. Act now.",
+    "vi": "Mơ lớn. Bắt đầu nhỏ. Hành động ngay."
+  },
+  {
+    "en": "Don’t wait for opportunity. Create it.",
+    "vi": "Đừng chờ cơ hội, hãy tạo ra nó."
+  },
+  {
+    "en": "Success is not for the lazy.",
+    "vi": "Thành công không dành cho kẻ lười biếng."
+  },
+  {
+    "en": "The best way to predict the future is to create it.",
+    "vi": "Cách tốt nhất để dự đoán tương lai là tự tạo ra nó."
+  },
+  {
+    "en": "Do something today that your future self will thank you for.",
+    "vi": "Hãy làm điều gì đó hôm nay để phiên bản tương lai của bạn biết ơn."
+  },
+  {
+    "en": "Action is the foundational key to all success.",
+    "vi": "Hành động là chìa khóa nền tảng của mọi thành công."
+  },
+  {
+    "en": "Small progress is still progress.",
+    "vi": "Tiến bộ nhỏ vẫn là tiến bộ."
+  },
+  {
+    "en": "Don’t watch the clock; do what it does. Keep going.",
+    "vi": "Đừng nhìn đồng hồ; hãy làm như nó. Tiếp tục tiến lên."
+  },
+  {
+    "en": "Believe you can and you’re halfway there.",
+    "vi": "Tin rằng bạn có thể, và bạn đã đi được nửa chặng đường."
+  },
+  {
+    "en": "You are stronger than you think.",
+    "vi": "Bạn mạnh mẽ hơn những gì bạn nghĩ."
+  },
+  {
+    "en": "Work hard in silence. Let success make the noise.",
+    "vi": "Lặng lẽ làm việc chăm chỉ. Hãy để thành công lên tiếng."
+  },
+  {
+    "en": "Great things never come from comfort zones.",
+    "vi": "Điều vĩ đại không bao giờ đến từ vùng an toàn."
+  },
+  {
+    "en": "Believe in yourself and all that you are.",
+    "vi": "Hãy tin vào bản thân và tất cả những gì bạn có."
+  },
+  {
+    "en": "Your limitation—it’s only your imagination.",
+    "vi": "Giới hạn của bạn – chỉ nằm trong trí tưởng tượng."
+  },
+  {
+    "en": "Push yourself, because no one else is going to do it for you.",
+    "vi": "Hãy tự thúc đẩy bản thân, vì không ai khác làm điều đó thay bạn."
+  },
+  {
+    "en": "Be the energy you want to attract.",
+    "vi": "Hãy trở thành nguồn năng lượng bạn muốn thu hút."
+  },
+  {
+    "en": "One day or day one. You decide.",
+    "vi": "Một ngày nào đó, hay là ngay hôm nay. Bạn chọn đi."
+  },
+  {
+    "en": "Focus on being productive instead of busy.",
+    "vi": "Tập trung vào hiệu quả thay vì bận rộn."
+  },
+  {
+    "en": "Your time is limited, don’t waste it living someone else’s life.",
+    "vi": "Thời gian của bạn có hạn, đừng lãng phí nó để sống cuộc đời của người khác."
+  },
+  {
+    "en": "Lost time is never found again.",
+    "vi": "Thời gian đã mất thì không bao giờ tìm lại được."
+  },
+  {
+    "en": "What you do today can improve all your tomorrows.",
+    "vi": "Những gì bạn làm hôm nay có thể cải thiện tất cả ngày mai."
+  },
+  {
+    "en": "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.",
+    "vi": "Đừng đắm chìm trong quá khứ, đừng mơ mộng về tương lai, hãy tập trung vào hiện tại."
+  },
+  {
+    "en": "Time is what we want most, but what we use worst.",
+    "vi": "Thời gian là điều chúng ta muốn nhất, nhưng lại sử dụng tệ nhất."
+  },
+  {
+    "en": "The future depends on what you do today.",
+    "vi": "Tương lai phụ thuộc vào những gì bạn làm hôm nay."
+  },
+  {
+    "en": "Shoot for the moon. Even if you miss, you’ll land among the stars.",
+    "vi": "Hãy ngắm tới mặt trăng. Dù lỡ, bạn vẫn hạ cánh giữa muôn vì sao."
+  },
+  {
+    "en": "Big journeys begin with small steps.",
+    "vi": "Hành trình lớn bắt đầu từ những bước nhỏ."
+  },
+  {
+    "en": "Success is the sum of small efforts repeated day in and day out.",
+    "vi": "Thành công là tổng của những nỗ lực nhỏ lặp lại mỗi ngày."
+  },
+  {
+    "en": "Dream it. Wish it. Do it.",
+    "vi": "Hãy mơ ước. Hãy khát khao. Hãy hành động."
+  },
+  {
+    "en": "Don’t be afraid to give up the good to go for the great.",
+    "vi": "Đừng ngại từ bỏ cái tốt để vươn tới cái vĩ đại."
+  },
+  {
+    "en": "Set your goals high, and don’t stop till you get there.",
+    "vi": "Đặt mục tiêu thật cao, và đừng dừng lại cho đến khi đạt được."
+  },
+  {
+    "en": "Ambition is the first step to success. The second is action.",
+    "vi": "Tham vọng là bước đầu tiên để thành công. Bước thứ hai là hành động."
+  },
+  {
+    "en": "Opportunities don’t happen. You create them.",
+    "vi": "Cơ hội không tự đến. Bạn phải tạo ra chúng."
+  },
+  {
+    "en": "Fall seven times and stand up eight.",
+    "vi": "Ngã bảy lần, đứng dậy tám lần."
+  },
+  {
+    "en": "Tough times never last, but tough people do.",
+    "vi": "Thời gian khó khăn không kéo dài, chỉ có con người mạnh mẽ mới bền vững."
+  },
+  {
+    "en": "Pain is temporary, greatness lasts forever.",
+    "vi": "Nỗi đau chỉ là tạm thời, vĩ đại mới là vĩnh cửu."
+  },
+  {
+    "en": "Difficult roads often lead to beautiful destinations.",
+    "vi": "Những con đường khó khăn thường dẫn đến đích đến tươi đẹp."
+  },
+  {
+    "en": "Perseverance is not a long race; it is many short races one after another.",
+    "vi": "Sự kiên trì không phải là một cuộc đua dài, mà là nhiều cuộc đua ngắn nối tiếp nhau."
+  },
+  {
+    "en": "Storms make trees take deeper roots.",
+    "vi": "Bão tố khiến cây phải bén rễ sâu hơn."
+  },
+  {
+    "en": "When you feel like quitting, remember why you started.",
+    "vi": "Khi bạn muốn bỏ cuộc, hãy nhớ lý do bạn bắt đầu."
+  },
+  {
+    "en": "Obstacles are those frightful things you see when you take your eyes off your goal.",
+    "vi": "Chướng ngại vật là những điều đáng sợ bạn thấy khi rời mắt khỏi mục tiêu."
+  },
+  {
+    "en": "Dream big. Start small. Act now.",
+    "vi": "Mơ lớn. Bắt đầu nhỏ. Hành động ngay."
+  },
+  {
+    "en": "Don’t wait for opportunity. Create it.",
+    "vi": "Đừng chờ cơ hội, hãy tạo ra nó."
+  },
+  {
+    "en": "Success is not for the lazy.",
+    "vi": "Thành công không dành cho kẻ lười biếng."
+  },
+  {
+    "en": "The best way to predict the future is to create it.",
+    "vi": "Cách tốt nhất để dự đoán tương lai là tự tạo ra nó."
+  },
+  {
+    "en": "Do something today that your future self will thank you for.",
+    "vi": "Hãy làm điều gì đó hôm nay để phiên bản tương lai của bạn biết ơn."
+  },
+  {
+    "en": "Action is the foundational key to all success.",
+    "vi": "Hành động là chìa khóa nền tảng của mọi thành công."
+  },
+  {
+    "en": "Small progress is still progress.",
+    "vi": "Tiến bộ nhỏ vẫn là tiến bộ."
+  },
+  {
+    "en": "Don’t watch the clock; do what it does. Keep going.",
+    "vi": "Đừng nhìn đồng hồ; hãy làm như nó. Tiếp tục tiến lên."
+  },
+  {
+    "en": "Believe you can and you’re halfway there.",
+    "vi": "Tin rằng bạn có thể, và bạn đã đi được nửa chặng đường."
+  },
+  {
+    "en": "You are stronger than you think.",
+    "vi": "Bạn mạnh mẽ hơn những gì bạn nghĩ."
+  },
+  {
+    "en": "Work hard in silence. Let success make the noise.",
+    "vi": "Lặng lẽ làm việc chăm chỉ. Hãy để thành công lên tiếng."
+  },
+  {
+    "en": "Great things never come from comfort zones.",
+    "vi": "Điều vĩ đại không bao giờ đến từ vùng an toàn."
+  },
+  {
+    "en": "Believe in yourself and all that you are.",
+    "vi": "Hãy tin vào bản thân và tất cả những gì bạn có."
+  },
+  {
+    "en": "Your limitation—it’s only your imagination.",
+    "vi": "Giới hạn của bạn – chỉ nằm trong trí tưởng tượng."
+  },
+  {
+    "en": "Push yourself, because no one else is going to do it for you.",
+    "vi": "Hãy tự thúc đẩy bản thân, vì không ai khác làm điều đó thay bạn."
+  },
+  {
+    "en": "Be the energy you want to attract.",
+    "vi": "Hãy trở thành nguồn năng lượng bạn muốn thu hút."
+  },
+  {
+    "en": "One day or day one. You decide.",
+    "vi": "Một ngày nào đó, hay là ngay hôm nay. Bạn chọn đi."
+  },
+  {
+    "en": "Focus on being productive instead of busy.",
+    "vi": "Tập trung vào hiệu quả thay vì bận rộn."
+  },
+  {
+    "en": "Your time is limited, don’t waste it living someone else’s life.",
+    "vi": "Thời gian của bạn có hạn, đừng lãng phí nó để sống cuộc đời của người khác."
+  },
+  {
+    "en": "Lost time is never found again.",
+    "vi": "Thời gian đã mất thì không bao giờ tìm lại được."
+  },
+  {
+    "en": "What you do today can improve all your tomorrows.",
+    "vi": "Những gì bạn làm hôm nay có thể cải thiện tất cả ngày mai."
+  },
+  {
+    "en": "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.",
+    "vi": "Đừng đắm chìm trong quá khứ, đừng mơ mộng về tương lai, hãy tập trung vào hiện tại."
+  },
+  {
+    "en": "Time is what we want most, but what we use worst.",
+    "vi": "Thời gian là điều chúng ta muốn nhất, nhưng lại sử dụng tệ nhất."
+  },
+  {
+    "en": "The future depends on what you do today.",
+    "vi": "Tương lai phụ thuộc vào những gì bạn làm hôm nay."
+  },
+  {
+    "en": "Shoot for the moon. Even if you miss, you’ll land among the stars.",
+    "vi": "Hãy ngắm tới mặt trăng. Dù lỡ, bạn vẫn hạ cánh giữa muôn vì sao."
+  },
+  {
+    "en": "Big journeys begin with small steps.",
+    "vi": "Hành trình lớn bắt đầu từ những bước nhỏ."
+  },
+  {
+    "en": "Success is the sum of small efforts repeated day in and day out.",
+    "vi": "Thành công là tổng của những nỗ lực nhỏ lặp lại mỗi ngày."
+  },
+  {
+    "en": "Dream it. Wish it. Do it.",
+    "vi": "Hãy mơ ước. Hãy khát khao. Hãy hành động."
+  },
+  {
+    "en": "Don’t be afraid to give up the good to go for the great.",
+    "vi": "Đừng ngại từ bỏ cái tốt để vươn tới cái vĩ đại."
+  },
+  {
+    "en": "Set your goals high, and don’t stop till you get there.",
+    "vi": "Đặt mục tiêu thật cao, và đừng dừng lại cho đến khi đạt được."
+  },
+  {
+    "en": "Ambition is the first step to success. The second is action.",
+    "vi": "Tham vọng là bước đầu tiên để thành công. Bước thứ hai là hành động."
+  },
+  {
+    "en": "Opportunities don’t happen. You create them.",
+    "vi": "Cơ hội không tự đến. Bạn phải tạo ra chúng."
+  },
+  {
+    "en": "Fall seven times and stand up eight.",
+    "vi": "Ngã bảy lần, đứng dậy tám lần."
+  },
+  {
+    "en": "Tough times never last, but tough people do.",
+    "vi": "Thời gian khó khăn không kéo dài, chỉ có con người mạnh mẽ mới bền vững."
+  },
+  {
+    "en": "Pain is temporary, greatness lasts forever.",
+    "vi": "Nỗi đau chỉ là tạm thời, vĩ đại mới là vĩnh cửu."
+  },
+  {
+    "en": "Difficult roads often lead to beautiful destinations.",
+    "vi": "Những con đường khó khăn thường dẫn đến đích đến tươi đẹp."
+  },
+  {
+    "en": "Perseverance is not a long race; it is many short races one after another.",
+    "vi": "Sự kiên trì không phải là một cuộc đua dài, mà là nhiều cuộc đua ngắn nối tiếp nhau."
+  },
+  {
+    "en": "Storms make trees take deeper roots.",
+    "vi": "Bão tố khiến cây phải bén rễ sâu hơn."
+  },
+  {
+    "en": "When you feel like quitting, remember why you started.",
+    "vi": "Khi bạn muốn bỏ cuộc, hãy nhớ lý do bạn bắt đầu."
+  },
+  {
+    "en": "Obstacles are those frightful things you see when you take your eyes off your goal.",
+    "vi": "Chướng ngại vật là những điều đáng sợ bạn thấy khi rời mắt khỏi mục tiêu."
+  },
+  {
+    "en": "Dream big. Start small. Act now.",
+    "vi": "Mơ lớn. Bắt đầu nhỏ. Hành động ngay."
+  },
+  {
+    "en": "Don’t wait for opportunity. Create it.",
+    "vi": "Đừng chờ cơ hội, hãy tạo ra nó."
+  },
+  {
+    "en": "Success is not for the lazy.",
+    "vi": "Thành công không dành cho kẻ lười biếng."
+  },
+  {
+    "en": "The best way to predict the future is to create it.",
+    "vi": "Cách tốt nhất để dự đoán tương lai là tự tạo ra nó."
+  },
+  {
+    "en": "Do something today that your future self will thank you for.",
+    "vi": "Hãy làm điều gì đó hôm nay để phiên bản tương lai của bạn biết ơn."
+  },
+  {
+    "en": "Action is the foundational key to all success.",
+    "vi": "Hành động là chìa khóa nền tảng của mọi thành công."
+  },
+  {
+    "en": "Small progress is still progress.",
+    "vi": "Tiến bộ nhỏ vẫn là tiến bộ."
+  },
+  {
+    "en": "Don’t watch the clock; do what it does. Keep going.",
+    "vi": "Đừng nhìn đồng hồ; hãy làm như nó. Tiếp tục tiến lên."
+  },
+  {
+    "en": "Believe you can and you’re halfway there.",
+    "vi": "Tin rằng bạn có thể, và bạn đã đi được nửa chặng đường."
+  },
+  {
+    "en": "You are stronger than you think.",
+    "vi": "Bạn mạnh mẽ hơn những gì bạn nghĩ."
+  },
+  {
+    "en": "Work hard in silence. Let success make the noise.",
+    "vi": "Lặng lẽ làm việc chăm chỉ. Hãy để thành công lên tiếng."
+  },
+  {
+    "en": "Great things never come from comfort zones.",
+    "vi": "Điều vĩ đại không bao giờ đến từ vùng an toàn."
+  },
+  {
+    "en": "Believe in yourself and all that you are.",
+    "vi": "Hãy tin vào bản thân và tất cả những gì bạn có."
+  },
+  {
+    "en": "Your limitation—it’s only your imagination.",
+    "vi": "Giới hạn của bạn – chỉ nằm trong trí tưởng tượng."
+  },
+  {
+    "en": "Push yourself, because no one else is going to do it for you.",
+    "vi": "Hãy tự thúc đẩy bản thân, vì không ai khác làm điều đó thay bạn."
+  },
+  {
+    "en": "Be the energy you want to attract.",
+    "vi": "Hãy trở thành nguồn năng lượng bạn muốn thu hút."
+  },
+  {
+    "en": "One day or day one. You decide.",
+    "vi": "Một ngày nào đó, hay là ngay hôm nay. Bạn chọn đi."
+  },
+  {
+    "en": "Focus on being productive instead of busy.",
+    "vi": "Tập trung vào hiệu quả thay vì bận rộn."
+  },
+  {
+    "en": "Your time is limited, don’t waste it living someone else’s life.",
+    "vi": "Thời gian của bạn có hạn, đừng lãng phí nó để sống cuộc đời của người khác."
+  },
+  {
+    "en": "Lost time is never found again.",
+    "vi": "Thời gian đã mất thì không bao giờ tìm lại được."
+  },
+  {
+    "en": "What you do today can improve all your tomorrows.",
+    "vi": "Những gì bạn làm hôm nay có thể cải thiện tất cả ngày mai."
+  },
+  {
+    "en": "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.",
+    "vi": "Đừng đắm chìm trong quá khứ, đừng mơ mộng về tương lai, hãy tập trung vào hiện tại."
+  },
+  {
+    "en": "Time is what we want most, but what we use worst.",
+    "vi": "Thời gian là điều chúng ta muốn nhất, nhưng lại sử dụng tệ nhất."
+  },
+  {
+    "en": "The future depends on what you do today.",
+    "vi": "Tương lai phụ thuộc vào những gì bạn làm hôm nay."
+  },
+  {
+    "en": "Shoot for the moon. Even if you miss, you’ll land among the stars.",
+    "vi": "Hãy ngắm tới mặt trăng. Dù lỡ, bạn vẫn hạ cánh giữa muôn vì sao."
+  },
+  {
+    "en": "Big journeys begin with small steps.",
+    "vi": "Hành trình lớn bắt đầu từ những bước nhỏ."
+  },
+  {
+    "en": "Success is the sum of small efforts repeated day in and day out.",
+    "vi": "Thành công là tổng của những nỗ lực nhỏ lặp lại mỗi ngày."
+  },
+  {
+    "en": "Dream it. Wish it. Do it.",
+    "vi": "Hãy mơ ước. Hãy khát khao. Hãy hành động."
+  },
+  {
+    "en": "Don’t be afraid to give up the good to go for the great.",
+    "vi": "Đừng ngại từ bỏ cái tốt để vươn tới cái vĩ đại."
+  },
+  {
+    "en": "Set your goals high, and don’t stop till you get there.",
+    "vi": "Đặt mục tiêu thật cao, và đừng dừng lại cho đến khi đạt được."
+  },
+  {
+    "en": "Ambition is the first step to success. The second is action.",
+    "vi": "Tham vọng là bước đầu tiên để thành công. Bước thứ hai là hành động."
+  },
+  {
+    "en": "Opportunities don’t happen. You create them.",
+    "vi": "Cơ hội không tự đến. Bạn phải tạo ra chúng."
+  },
+  {
+    "en": "Fall seven times and stand up eight.",
+    "vi": "Ngã bảy lần, đứng dậy tám lần."
+  },
+  {
+    "en": "Tough times never last, but tough people do.",
+    "vi": "Thời gian khó khăn không kéo dài, chỉ có con người mạnh mẽ mới bền vững."
+  },
+  {
+    "en": "Pain is temporary, greatness lasts forever.",
+    "vi": "Nỗi đau chỉ là tạm thời, vĩ đại mới là vĩnh cửu."
+  },
+  {
+    "en": "Difficult roads often lead to beautiful destinations.",
+    "vi": "Những con đường khó khăn thường dẫn đến đích đến tươi đẹp."
+  },
+  {
+    "en": "Perseverance is not a long race; it is many short races one after another.",
+    "vi": "Sự kiên trì không phải là một cuộc đua dài, mà là nhiều cuộc đua ngắn nối tiếp nhau."
+  },
+  {
+    "en": "Storms make trees take deeper roots.",
+    "vi": "Bão tố khiến cây phải bén rễ sâu hơn."
+  },
+  {
+    "en": "When you feel like quitting, remember why you started.",
+    "vi": "Khi bạn muốn bỏ cuộc, hãy nhớ lý do bạn bắt đầu."
+  },
+  {
+    "en": "Obstacles are those frightful things you see when you take your eyes off your goal.",
+    "vi": "Chướng ngại vật là những điều đáng sợ bạn thấy khi rời mắt khỏi mục tiêu."
+  },
+  {
+    "en": "Dream big. Start small. Act now.",
+    "vi": "Mơ lớn. Bắt đầu nhỏ. Hành động ngay."
+  },
+  {
+    "en": "Don’t wait for opportunity. Create it.",
+    "vi": "Đừng chờ cơ hội, hãy tạo ra nó."
+  },
+  {
+    "en": "Success is not for the lazy.",
+    "vi": "Thành công không dành cho kẻ lười biếng."
+  },
+  {
+    "en": "The best way to predict the future is to create it.",
+    "vi": "Cách tốt nhất để dự đoán tương lai là tự tạo ra nó."
+  },
+  {
+    "en": "Do something today that your future self will thank you for.",
+    "vi": "Hãy làm điều gì đó hôm nay để phiên bản tương lai của bạn biết ơn."
+  },
+  {
+    "en": "Action is the foundational key to all success.",
+    "vi": "Hành động là chìa khóa nền tảng của mọi thành công."
+  },
+  {
+    "en": "Small progress is still progress.",
+    "vi": "Tiến bộ nhỏ vẫn là tiến bộ."
+  },
+  {
+    "en": "Don’t watch the clock; do what it does. Keep going.",
+    "vi": "Đừng nhìn đồng hồ; hãy làm như nó. Tiếp tục tiến lên."
+  },
+  {
+    "en": "Believe you can and you’re halfway there.",
+    "vi": "Tin rằng bạn có thể, và bạn đã đi được nửa chặng đường."
+  },
+  {
+    "en": "You are stronger than you think.",
+    "vi": "Bạn mạnh mẽ hơn những gì bạn nghĩ."
+  },
+  {
+    "en": "Work hard in silence. Let success make the noise.",
+    "vi": "Lặng lẽ làm việc chăm chỉ. Hãy để thành công lên tiếng."
+  },
+  {
+    "en": "Great things never come from comfort zones.",
+    "vi": "Điều vĩ đại không bao giờ đến từ vùng an toàn."
+  },
+  {
+    "en": "Believe in yourself and all that you are.",
+    "vi": "Hãy tin vào bản thân và tất cả những gì bạn có."
+  },
+  {
+    "en": "Your limitation—it’s only your imagination.",
+    "vi": "Giới hạn của bạn – chỉ nằm trong trí tưởng tượng."
+  },
+  {
+    "en": "Push yourself, because no one else is going to do it for you.",
+    "vi": "Hãy tự thúc đẩy bản thân, vì không ai khác làm điều đó thay bạn."
+  },
+  {
+    "en": "Be the energy you want to attract.",
+    "vi": "Hãy trở thành nguồn năng lượng bạn muốn thu hút."
+  },
+  {
+    "en": "One day or day one. You decide.",
+    "vi": "Một ngày nào đó, hay là ngay hôm nay. Bạn chọn đi."
+  },
+  {
+    "en": "Focus on being productive instead of busy.",
+    "vi": "Tập trung vào hiệu quả thay vì bận rộn."
+  },
+  {
+    "en": "Your time is limited, don’t waste it living someone else’s life.",
+    "vi": "Thời gian của bạn có hạn, đừng lãng phí nó để sống cuộc đời của người khác."
+  },
+  {
+    "en": "Lost time is never found again.",
+    "vi": "Thời gian đã mất thì không bao giờ tìm lại được."
+  },
+  {
+    "en": "What you do today can improve all your tomorrows.",
+    "vi": "Những gì bạn làm hôm nay có thể cải thiện tất cả ngày mai."
+  },
+  {
+    "en": "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.",
+    "vi": "Đừng đắm chìm trong quá khứ, đừng mơ mộng về tương lai, hãy tập trung vào hiện tại."
+  },
+  {
+    "en": "Time is what we want most, but what we use worst.",
+    "vi": "Thời gian là điều chúng ta muốn nhất, nhưng lại sử dụng tệ nhất."
+  },
+  {
+    "en": "The future depends on what you do today.",
+    "vi": "Tương lai phụ thuộc vào những gì bạn làm hôm nay."
+  },
+  {
+    "en": "Shoot for the moon. Even if you miss, you’ll land among the stars.",
+    "vi": "Hãy ngắm tới mặt trăng. Dù lỡ, bạn vẫn hạ cánh giữa muôn vì sao."
+  },
+  {
+    "en": "Big journeys begin with small steps.",
+    "vi": "Hành trình lớn bắt đầu từ những bước nhỏ."
+  },
+  {
+    "en": "Success is the sum of small efforts repeated day in and day out.",
+    "vi": "Thành công là tổng của những nỗ lực nhỏ lặp lại mỗi ngày."
+  },
+  {
+    "en": "Dream it. Wish it. Do it.",
+    "vi": "Hãy mơ ước. Hãy khát khao. Hãy hành động."
+  },
+  {
+    "en": "Don’t be afraid to give up the good to go for the great.",
+    "vi": "Đừng ngại từ bỏ cái tốt để vươn tới cái vĩ đại."
+  },
+  {
+    "en": "Set your goals high, and don’t stop till you get there.",
+    "vi": "Đặt mục tiêu thật cao, và đừng dừng lại cho đến khi đạt được."
+  },
+  {
+    "en": "Ambition is the first step to success. The second is action.",
+    "vi": "Tham vọng là bước đầu tiên để thành công. Bước thứ hai là hành động."
+  },
+  {
+    "en": "Opportunities don’t happen. You create them.",
+    "vi": "Cơ hội không tự đến. Bạn phải tạo ra chúng."
+  }
+]
