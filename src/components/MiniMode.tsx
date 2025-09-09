@@ -13,35 +13,28 @@ interface MiniModeProps {
   timeLeft: number;
   isRunning: boolean;
   activeTab: string;
-  alwaysOnTop: boolean;
-  autoStart: boolean;
   onStart: () => void;
   onPause: () => void;
   onNext: () => void;
-  onToggleAlwaysOnTop: () => void;
-  onToggleAutostart: () => void;
   getProgress: () => number;
   formatTime: (seconds: number) => string;
-  currentQuote: string;
+  currentQuote: { en: string; vi: string };
   youtubeUrl: string;
   getYouTubeEmbedUrl: (url: string) => string;
   customTimes: { focus: number; shortBreak: number; longBreak: number };
   onWorkTimeChange: (value: number) => void;
   onShortBreakTimeChange: (value: number) => void;
   onLongBreakTimeChange: (value: number) => void;
+  onAnimationComplete?: () => void;
 }
 
 export function MiniMode({
   timeLeft,
   isRunning,
   activeTab,
-  alwaysOnTop,
-  autoStart,
   onStart,
   onPause,
   onNext,
-  onToggleAlwaysOnTop,
-  onToggleAutostart,
   getProgress,
   formatTime,
   currentQuote,
@@ -51,13 +44,121 @@ export function MiniMode({
   onWorkTimeChange,
   onShortBreakTimeChange,
   onLongBreakTimeChange,
+  onAnimationComplete,
 }: MiniModeProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [autoStartNext, setAutoStartNext] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
+  const [animationDuration, setAnimationDuration] = useState(15);
+  const [animationKey, setAnimationKey] = useState(0);
+  const [isAnimationComplete, setIsAnimationComplete] = useState(false);
+  const [englishComplete, setEnglishComplete] = useState(false);
+  const [vietnameseComplete, setVietnameseComplete] = useState(false);
+  const [animationTarget, setAnimationTarget] = useState("-120%");
   const settingsRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const thumbnailRef = useRef<HTMLDivElement>(null);
+
+  // Calculate animation duration based on actual UI dimensions
+  useEffect(() => {
+    const calculateDuration = () => {
+      if (containerRef.current && thumbnailRef.current) {
+        // Get actual UI dimensions
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const thumbnailRect = thumbnailRef.current.getBoundingClientRect();
+        
+        // Create temporary elements to measure actual text width
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.visibility = 'hidden';
+        tempDiv.style.whiteSpace = 'nowrap';
+        tempDiv.style.fontSize = '12px'; // text-xs
+        tempDiv.style.fontFamily = 'inherit';
+        tempDiv.style.fontWeight = '500';
+        tempDiv.style.fontStyle = 'italic';
+        document.body.appendChild(tempDiv);
+
+        // Measure both quotes and use the longer one
+        tempDiv.textContent = `"${currentQuote.en}"`;
+        const enWidth = tempDiv.offsetWidth;
+        
+        tempDiv.textContent = `"${currentQuote.vi}"`;
+        const viWidth = tempDiv.offsetWidth;
+        
+        const maxTextWidth = Math.max(enWidth, viWidth);
+        
+        // Calculate the actual available space for text animation
+        // Text needs to travel from right edge of container to completely exit the left side
+        const availableWidth = containerRect.width;
+        
+        // Total distance = container width + text width (to ensure text completely exits)
+        // Since text starts at 100% (right edge) and needs to go to -120% (completely out)
+        const totalDistance = availableWidth + maxTextWidth;
+        const speed = 30; // pixels per second
+        const duration = totalDistance / speed;
+        
+        const finalDuration = Math.max(5, Math.min(40, duration));
+        setAnimationDuration(finalDuration);
+        
+        // Calculate animation target to ensure text completely exits
+        const targetPercentage = (maxTextWidth / availableWidth * 100) + 100;
+        setAnimationTarget(`-${targetPercentage}%`);
+        
+        // Debug log
+        console.log('Animation calculation:', {
+          containerWidth: containerRect.width,
+          containerHeight: containerRect.height,
+          thumbnailWidth: thumbnailRect.width,
+          thumbnailHeight: thumbnailRect.height,
+          availableWidth,
+          enWidth,
+          viWidth,
+          maxTextWidth,
+          totalDistance,
+          speed,
+          duration,
+          finalDuration,
+          targetPercentage,
+          animationTarget: `-${targetPercentage}%`
+        });
+        
+        // Reset animation state
+        setIsAnimationComplete(false);
+        setEnglishComplete(false);
+        setVietnameseComplete(false);
+        
+        // Trigger new animation when quote changes
+        setAnimationKey(prev => prev + 1);
+        
+        document.body.removeChild(tempDiv);
+      }
+    };
+
+    // Use setTimeout to ensure DOM is ready
+    const timeoutId = setTimeout(calculateDuration, 100);
+    
+    const handleResize = () => {
+      setTimeout(calculateDuration, 100);
+    };
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [currentQuote]);
+
+  // Check if both quotes are complete - wait for Vietnamese quote (which has delay)
+  useEffect(() => {
+    if (englishComplete && vietnameseComplete && !isAnimationComplete) {
+      // Add a small delay to ensure Vietnamese quote has fully completed
+      setTimeout(() => {
+        setIsAnimationComplete(true);
+        onAnimationComplete?.();
+      }, 100);
+    }
+  }, [englishComplete, vietnameseComplete, isAnimationComplete, onAnimationComplete]);
 
   // Close settings when clicking outside
   useEffect(() => {
@@ -81,28 +182,28 @@ export function MiniMode({
 
   const modeLabel =
     activeTab === "focus"
-      ? "Focus"
+      ? "F"
       : activeTab === "shortBreak"
-      ? "Short Break"
-      : "Long Break";
+      ? "S"
+      : "L";
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full group">
       {/* Main MiniMode Interface */}
       <div
-        className="group h-full px-4 py-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded-2xl relative shadow-2xl"
+        className="h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800  relative shadow-2xl overflow-hidden"
         ref={settingsRef}
       >
-        {/* Left controls (hover to reveal) */}
-        <div className="absolute left-0 top-0 h-full w-8 z-50 pointer-events-auto">
+        {/* Left controls (hover to reveal) - Spotify style */}
+        <div className="absolute left-0 top-0 h-full w-6 z-50 pointer-events-auto">
           <div
-            className="pt-2 pl-2 flex flex-col items-start gap-1 opacity-0 hover:opacity-100 -ml-2 hover:ml-0 transition-all duration-200 ease-out"
+            className="pt-1.5 pl-1.5 flex flex-col items-start gap-0.5 h-full opacity-0 group-hover:opacity-100 -translate-x-8 group-hover:translate-x-0 transition-all duration-200 ease-out"
             data-tauri-drag-region
           >
             {/* Close button */}
             <button
               aria-label="Close"
-              className="h-4 w-4 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow flex items-center justify-center"
+              className="h-3 w-3 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow flex items-center justify-center"
               onMouseDown={(e) => e.stopPropagation()}
               onClick={async (e) => {
                 e.stopPropagation();
@@ -112,47 +213,89 @@ export function MiniMode({
               }}
               data-tauri-drag-region="false"
             >
-              <X className="h-3 w-3" />
+              <X className="h-2 w-2" />
             </button>
 
             {/* Drag handle */}
             <div
-              className="mt-1 h-6 w-4 flex items-center justify-center cursor-move text-white/90"
+              className="h-4 w-3 flex pt-4 items-center justify-center cursor-move text-white/90 group-hover:pointer-events-auto pointer-events-none"
               data-tauri-drag-region
               title="Drag window"
             >
-              <GripVertical className="h-4 w-4" />
+              <GripVertical className="h-3 w-3" />
             </div>
           </div>
         </div>
 
-        {/* Main Content Layout */}
-        <div className="flex items-center gap-4 pl-8">
-          {/* YouTube Thumbnail */}
-          <div className="w-16 h-16 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0">
-            <iframe
-              src={getYouTubeEmbedUrl(youtubeUrl)}
-              className="w-full h-full"
-              title="Mini YouTube"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-              allowFullScreen
-            />
-          </div>
+         {/* Main Content Layout - Flex Row */}
+         <div className="flex items-center py-3 h-full">
+           {/* Middle section - Thumbnail, Timer and Quotes (animated, can be hidden behind right section) */}
+           <div className="flex items-center gap-2 group-hover:translate-x-8 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2">
+             {/* YouTube Thumbnail */}
+             <div ref={thumbnailRef} className="w-8 h-8 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0">
+               <iframe
+                 src={getYouTubeEmbedUrl(youtubeUrl)}
+                 className="w-full h-full"
+                 title="Mini YouTube"
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                 referrerPolicy="no-referrer"
+                 sandbox="allow-scripts allow-same-origin allow-presentation"
+                 allowFullScreen
+               />
+             </div>
 
-          {/* Timer and Controls */}
-          <div className="flex-1 flex items-center justify-between">
-            {/* Timer Display */}
-            <div className="flex items-baseline gap-3">
-              <span className="text-2xl font-mono font-bold text-white">
-                {formatTime(timeLeft)}
-              </span>
-              <span className="text-sm text-gray-300 font-medium">
-                ({modeLabel})
-              </span>
-            </div>
+             {/* Timer and Quotes Display */}
+             <div ref={containerRef} className="flex flex-col gap-0 min-w-0 flex-1">
+               {/* English Quote */}
+               <div className="overflow-hidden">
+                 <motion.div
+                   key={`${animationKey}-${currentQuote.en}-english`}
+                   className="whitespace-nowrap text-xs text-blue-400 font-medium italic"
+                   initial={{ x: "100%" }}
+                   animate={{ x: animationTarget }}
+                   transition={{ duration: animationDuration, ease: "linear" }}
+                   onAnimationComplete={() => {
+                     if (!englishComplete) {
+                       setEnglishComplete(true);
+                     }
+                   }}
+                 >
+                   "{currentQuote.en}"
+                 </motion.div>
+               </div>
+               
+               {/* Timer Display */}
+               <div className="flex items-baseline gap-3">
+                 <span className="text-2xl font-mono font-bold text-white whitespace-nowrap">
+                   {formatTime(timeLeft)}
+                 </span>
+                 <span className="text-sm text-gray-300 font-medium whitespace-nowrap">
+                   ({modeLabel})
+                 </span>
+               </div>
+               
+               {/* Vietnamese Quote */}
+               <div className="overflow-hidden">
+                 <motion.div
+                   key={`${animationKey}-${currentQuote.vi}-vietnamese`}
+                   className="whitespace-nowrap text-xs text-emerald-400 font-medium italic"
+                   initial={{ x: "100%" }}
+                   animate={{ x: animationTarget }}
+                   transition={{ duration: animationDuration, ease: "linear" }}
+                   onAnimationComplete={() => {
+                     if (!vietnameseComplete) {
+                       setVietnameseComplete(true);
+                     }
+                   }}
+                 >
+                   "{currentQuote.vi}"
+                 </motion.div>
+               </div>
+             </div>
+           </div>
 
+           {/* Right section - Control Buttons (completely fixed position) */}
+           <div className="flex items-center gap-2 flex-shrink-0 relative z-10 pr-4">
             {/* Control Buttons */}
             <div className="flex items-center gap-2">
               <AnimatePresence mode="wait">
@@ -196,41 +339,28 @@ export function MiniMode({
                   </motion.div>
                 )}
               </AnimatePresence>
-
-              {/* Settings Button */}
-              <Button
-                onClick={() => {
-                  console.log(
-                    "Settings button clicked, current state:",
-                    showSettings
-                  );
-                  setShowSettings(!showSettings);
-                }}
-                size="sm"
-                className={`h-8 w-8 rounded-full shadow-lg flex items-center justify-center p-0 ${
-                  showSettings
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                    : "bg-gray-600 hover:bg-gray-500 text-white"
-                }`}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
             </div>
+
+            {/* Settings button - Fixed position */}
+            <button
+              onClick={() => {
+                console.log(
+                  "Settings button clicked, current state:",
+                  showSettings
+                );
+                setShowSettings(!showSettings);
+              }}
+              className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 ${
+                showSettings
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                  : "bg-gray-600 hover:bg-gray-500 text-white"
+              }`}
+            >
+              <MoreVertical className="h-3 w-3" />
+            </button>
           </div>
         </div>
 
-        {/* Quote Marquee */}
-        <div className="mt-3 overflow-hidden">
-          <motion.div
-            key={currentQuote}
-            className="whitespace-nowrap text-sm text-emerald-400 font-medium italic"
-            initial={{ x: "100%" }}
-            animate={{ x: ["100%", "-100%"] }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          >
-            "{currentQuote}"
-          </motion.div>
-        </div>
       </div>
 
       {/* Settings Panel Dropdown */}
@@ -241,7 +371,7 @@ export function MiniMode({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-50"
+            className="absolute top-full right-0 mt-2 w-80 bg-gray-800  shadow-2xl border border-gray-600 p-6 z-50"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
@@ -262,23 +392,6 @@ export function MiniMode({
                   Quick Settings
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">
-                      Auto start next
-                    </span>
-                    <button
-                      onClick={() => setAutoStartNext(!autoStartNext)}
-                      className={`w-12 h-6 rounded-full transition-colors ${
-                        autoStartNext ? "bg-emerald-500" : "bg-gray-600"
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                          autoStartNext ? "translate-x-6" : "translate-x-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-300 text-sm">
                       Rounds per cycle

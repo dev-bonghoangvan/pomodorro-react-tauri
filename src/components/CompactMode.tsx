@@ -10,18 +10,13 @@ interface CompactModeProps {
   timeLeft: number;
   isRunning: boolean;
   activeTab: string;
-  alwaysOnTop: boolean;
-  autoStart: boolean;
   customTimes: { focus: number; shortBreak: number; longBreak: number };
   currentQuote: string;
   isVietnamese: boolean;
   onStart: () => void;
   onPause: () => void;
   onNext: () => void;
-  onToggleAlwaysOnTop: () => void;
-  onToggleAutostart: () => void;
   onTabChange: (tab: string) => void;
-  onLanguageToggle: () => void;
   getProgress: () => number;
   formatTime: (seconds: number) => string;
   getTabIcon: (tab: string) => JSX.Element;
@@ -36,18 +31,13 @@ export function CompactMode({
   timeLeft,
   isRunning,
   activeTab,
-  alwaysOnTop,
-  autoStart,
   customTimes,
   currentQuote,
   isVietnamese,
   onStart,
   onPause,
   onNext,
-  onToggleAlwaysOnTop,
-  onToggleAutostart,
   onTabChange,
-  onLanguageToggle,
   getProgress,
   formatTime,
   getTabIcon,
@@ -59,7 +49,6 @@ export function CompactMode({
 }: CompactModeProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [autoStartNext, setAutoStartNext] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -86,10 +75,10 @@ export function CompactMode({
 
   const modeLabel =
     activeTab === "focus"
-      ? "Focus mode"
+      ? "Focus"
       : activeTab === "shortBreak"
-      ? "Short Break"
-      : "Long Break";
+      ? "S_Break"
+      : "L_Break";
 
   return (
     <div className="relative h-full" ref={settingsRef}>
@@ -161,7 +150,7 @@ export function CompactMode({
         </div>
 
         {/* YouTube Frame */}
-        <div className="w-full overflow-hidden rounded-lg border border-gray-600 mb-4">
+        <div className="w-full overflow-hidden  border border-gray-600 mb-4">
           <div className="aspect-video w-full">
             <iframe
               src={getYouTubeEmbedUrl(youtubeUrl)}
@@ -174,37 +163,26 @@ export function CompactMode({
           </div>
         </div>
 
-        {/* Quote and Language Toggle */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div className="text-center">
+        {/* Quotes Display */}
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="text-center space-y-2">
             <AnimatePresence mode="wait">
-              <motion.p
+              <motion.div
                 key={`${currentQuote}-${isVietnamese}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.3 }}
-                className="text-sm text-emerald-400 font-medium italic mb-2"
+                className="space-y-1"
               >
-                "{currentQuote}"
-              </motion.p>
+                <p className="text-sm text-emerald-400 font-medium italic">
+                  "{currentQuote}"
+                </p>
+                <p className="text-sm text-blue-400 font-medium italic">
+                  "{currentQuote}"
+                </p>
+              </motion.div>
             </AnimatePresence>
-          </div>
-
-          {/* Language Toggle */}
-          <div className="flex justify-center">
-            <Button
-              onClick={onLanguageToggle}
-              variant="ghost"
-              size="sm"
-              className={`h-8 px-3 rounded-lg ${
-                isVietnamese
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-              }`}
-            >
-              {isVietnamese ? "🇻🇳" : "🇺🇸"}
-            </Button>
           </div>
         </div>
       </div>
@@ -237,21 +215,6 @@ export function CompactMode({
                 Quick Settings
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Auto start next</span>
-                  <button
-                    onClick={() => setAutoStartNext(!autoStartNext)}
-                    className={`w-12 h-6 rounded-full transition-colors ${
-                      autoStartNext ? "bg-emerald-500" : "bg-gray-600"
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        autoStartNext ? "translate-x-6" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 text-sm">
                     Rounds per cycle

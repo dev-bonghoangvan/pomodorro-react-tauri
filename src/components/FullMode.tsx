@@ -19,8 +19,6 @@ interface FullModeProps {
   timeLeft: number;
   isRunning: boolean;
   activeTab: string;
-  alwaysOnTop: boolean;
-  autoStart: boolean;
   customTimes: { focus: number; shortBreak: number; longBreak: number };
   currentQuote: string;
   isVietnamese: boolean;
@@ -32,10 +30,7 @@ interface FullModeProps {
   onStart: () => void;
   onPause: () => void;
   onNext: () => void;
-  onToggleAlwaysOnTop: () => void;
-  onToggleAutostart: () => void;
   onTabChange: (tab: string) => void;
-  onLanguageToggle: () => void;
   onYouTubeToggle: () => void;
   onYouTubeUrlChange: () => void;
   onNewYoutubeUrlChange: (url: string) => void;
@@ -52,8 +47,6 @@ export function FullMode({
   timeLeft,
   isRunning,
   activeTab,
-  alwaysOnTop,
-  autoStart,
   customTimes,
   currentQuote,
   isVietnamese,
@@ -65,10 +58,7 @@ export function FullMode({
   onStart,
   onPause,
   onNext,
-  onToggleAlwaysOnTop,
-  onToggleAutostart,
   onTabChange,
-  onLanguageToggle,
   onYouTubeToggle,
   onYouTubeUrlChange,
   onNewYoutubeUrlChange,
@@ -82,7 +72,6 @@ export function FullMode({
 }: FullModeProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [autoStartNext, setAutoStartNext] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -321,40 +310,6 @@ export function FullMode({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              {/* Language Toggle Button */}
-              <div className="flex justify-center mb-4">
-                <motion.button
-                  onClick={onLanguageToggle}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors border-2 ${
-                    isVietnamese
-                      ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
-                      : "bg-blue-500/20 border-blue-500 text-blue-400"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title={
-                    isVietnamese
-                      ? "Switch to English"
-                      : "Chuyển sang tiếng Việt"
-                  }
-                >
-                  {isVietnamese ? (
-                    <img
-                      src={VietnamFlag}
-                      alt="Vietnam Flag"
-                      className="w-6 h-4 object-contain"
-                    />
-                  ) : (
-                    <img
-                      src={USAFlag}
-                      alt="USA Flag"
-                      className="w-6 h-4 object-contain"
-                    />
-                  )}
-                  <span>{isVietnamese ? "Tiếng Việt" : "English"}</span>
-                </motion.button>
-              </div>
-
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${currentQuote}-${isVietnamese}`}
@@ -364,9 +319,14 @@ export function FullMode({
                   transition={{ duration: 0.5 }}
                   className="space-y-3"
                 >
-                  <p className="text-lg text-emerald-400 font-medium italic">
-                    {currentQuote}
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-lg text-emerald-400 font-medium italic">
+                      "{currentQuote}"
+                    </p>
+                    <p className="text-lg text-blue-400 font-medium italic">
+                      "{currentQuote}"
+                    </p>
+                  </div>
                   <div className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
                 </motion.div>
               </AnimatePresence>
@@ -527,21 +487,6 @@ export function FullMode({
                 Quick Settings
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Auto start next</span>
-                  <button
-                    onClick={() => setAutoStartNext(!autoStartNext)}
-                    className={`w-12 h-6 rounded-full transition-colors ${
-                      autoStartNext ? "bg-emerald-500" : "bg-gray-600"
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        autoStartNext ? "translate-x-6" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 text-sm">
                     Rounds per cycle

@@ -7,35 +7,33 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  border-radius: 16px;
 }
 
 #root {
-  border-radius: 16px;
   overflow: hidden;
   height: 100vh;
 }
 
 :root {
   /* Modern Pomodoro design tokens */
-  --background: 0 0% 100%; /* Clean white background */
-  --foreground: 220 13% 18%; /* Dark gray text */
-  --card: 210 40% 98%; /* Light gray cards */
-  --card-foreground: 215 16% 47%; /* Medium gray text on cards */
-  --popover: 0 0% 100%; /* White popover */
-  --popover-foreground: 220 13% 18%; /* Dark text on popover */
+  --background: 222 84% 5%; /* Dark background */
+  --foreground: 210 40% 96%; /* Light text */
+  --card: 215 28% 17%; /* Dark slate cards */
+  --card-foreground: 214 32% 91%; /* Light text on cards */
+  --popover: 215 28% 17%; /* Dark popover */
+  --popover-foreground: 210 40% 96%; /* Light text on popover */
   --primary: 158 64% 52%; /* Emerald primary color */
   --primary-foreground: 0 0% 100%; /* White text on primary */
   --secondary: 158 64% 52%; /* Emerald accent */
   --secondary-foreground: 0 0% 100%; /* White text on secondary */
-  --muted: 210 40% 96%; /* Light muted background */
-  --muted-foreground: 215 16% 47%; /* Muted gray text */
+  --muted: 215 28% 17%; /* Dark muted */
+  --muted-foreground: 217 19% 35%; /* Light muted text */
   --accent: 158 64% 52%; /* Emerald accent */
   --accent-foreground: 0 0% 100%; /* White text on accent */
   --destructive: 0 84% 60%; /* Red for destructive actions */
   --destructive-foreground: 0 0% 100%; /* White text on destructive */
-  --border: 214 32% 91%; /* Light gray border */
-  --input: 210 40% 98%; /* Light input background */
+  --border: 215 28% 17%; /* Dark border */
+  --input: 215 28% 17%; /* Dark input */
   --ring: 158 64% 52%; /* Emerald focus ring */
   --chart-1: 158 64% 52%;
   --chart-2: 158 64% 52%;

@@ -16,15 +16,10 @@ interface TallModeProps {
   onPlayPause: () => void;
   onSkip: () => void;
   onReset: () => void;
-  alwaysOnTop: boolean;
-  onAlwaysOnTopToggle: () => void;
-  autoStart: boolean;
-  onAutoStartToggle: () => void;
   onMinimize: () => void;
   onSettings: () => void;
   currentQuote: string;
   isVietnamese: boolean;
-  onLanguageToggle: () => void;
   workTime: number;
   shortBreakTime: number;
   longBreakTime: number;
@@ -44,15 +39,10 @@ export function TallMode({
   onPlayPause,
   onSkip,
   onReset,
-  alwaysOnTop,
-  onAlwaysOnTopToggle,
-  autoStart,
-  onAutoStartToggle,
   onMinimize,
   onSettings,
   currentQuote,
   isVietnamese,
-  onLanguageToggle,
   workTime,
   shortBreakTime,
   longBreakTime,
@@ -65,7 +55,6 @@ export function TallMode({
 }: TallModeProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [autoStartNext, setAutoStartNext] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -270,34 +259,25 @@ export function TallMode({
             </motion.div>
           </div>
 
-          {/* Quote and Language Toggle */}
+          {/* Quotes Display */}
           <div className="text-center space-y-4">
             <AnimatePresence mode="wait">
-              <motion.p
+              <motion.div
                 key={currentQuote}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.5 }}
-                className="text-sm text-emerald-400 font-medium italic line-clamp-2"
+                className="space-y-2"
               >
-                "{currentQuote}"
-              </motion.p>
+                <p className="text-sm text-emerald-400 font-medium italic">
+                  "{currentQuote}"
+                </p>
+                <p className="text-sm text-blue-400 font-medium italic">
+                  "{currentQuote}"
+                </p>
+              </motion.div>
             </AnimatePresence>
-
-            {/* Language Toggle */}
-            <Button
-              onClick={onLanguageToggle}
-              variant="ghost"
-              size="sm"
-              className={`h-8 px-3 rounded-lg ${
-                isVietnamese
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-              }`}
-            >
-              {isVietnamese ? "🇻🇳" : "🇺🇸"}
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -330,21 +310,6 @@ export function TallMode({
                 Quick Settings
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Auto start next</span>
-                  <button
-                    onClick={() => setAutoStartNext(!autoStartNext)}
-                    className={`w-12 h-6 rounded-full transition-colors ${
-                      autoStartNext ? "bg-emerald-500" : "bg-gray-600"
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        autoStartNext ? "translate-x-6" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 text-sm">
                     Rounds per cycle

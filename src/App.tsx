@@ -46,20 +46,23 @@ export default function App() {
   const [tempTime, setTempTime] = useState("");
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVietnamese, setIsVietnamese] = useState(false); // Default to English
-  const [alwaysOnTop, setAlwaysOnTop] = useState(true);
-  const [autoStart, setAutoStart] = useState(false);
   const intervalRef = useRef<number | null>(null);
 
   // Get window size and display mode
   const { width, height, mode } = useWindowSize();
 
-  useEffect(() => {
-    const quoteInterval = setInterval(() => {
-      setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length);
-    }, 6000); // Tăng từ 5 giây lên 8 giây
+  // Remove fixed interval - quotes will change based on animation completion
+  // useEffect(() => {
+  //   const quoteInterval = setInterval(() => {
+  //     setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length);
+  //   }, 6000);
 
-    return () => clearInterval(quoteInterval);
-  }, [quotesData.length]);
+  //   return () => clearInterval(quoteInterval);
+  // }, [quotesData.length]);
+
+  const handleQuoteAnimationComplete = () => {
+    setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length);
+  };
 
   // Timer logic
   useEffect(() => {
@@ -119,17 +122,6 @@ export default function App() {
     }
   }, [timeLeft, isRunning]);
 
-  // Window always-on-top toggle via Rust (safer across versions)
-  useEffect(() => {
-    invoke("set_always_on_top", { on: alwaysOnTop }).catch(() => {});
-  }, [alwaysOnTop]);
-
-  // Try read autostart state (Windows only; no-op on other OS)
-  useEffect(() => {
-    invoke<boolean>("is_autostart_enabled")
-      .then((v) => setAutoStart(!!v))
-      .catch(() => {});
-  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -232,20 +224,13 @@ export default function App() {
     return isVietnamese ? quote.vi : quote.en;
   };
 
-  const toggleAutostart = async (enable: boolean) => {
-    try {
-      await invoke("set_autostart", { enable });
-      setAutoStart(enable);
-    } catch (e) {
-      console.error(e);
-      alert(
-        "Không bật được Autostart trên Windows. Bạn có thể chạy ứng dụng với quyền phù hợp, hoặc bật bằng tay."
-      );
-    }
+  const getCurrentQuoteObject = () => {
+    return quotesData[currentQuoteIndex];
   };
 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm border border-white/10 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background overflow-hidden relative">
       {/* Global Drag Area (frameless window drag handle) for non-mini modes */}
       {mode !== "mini" && (
         <div
@@ -272,16 +257,12 @@ export default function App() {
               timeLeft={timeLeft}
               isRunning={isRunning}
               activeTab={activeTab}
-              alwaysOnTop={alwaysOnTop}
-              autoStart={autoStart}
               onStart={handleStart}
               onPause={handlePause}
               onNext={handleNext}
-              onToggleAlwaysOnTop={() => setAlwaysOnTop(!alwaysOnTop)}
-              onToggleAutostart={() => toggleAutostart(!autoStart)}
               getProgress={getProgress}
               formatTime={formatTime}
-              currentQuote={getCurrentQuote()}
+              currentQuote={getCurrentQuoteObject()}
               youtubeUrl={youtubeUrl}
               getYouTubeEmbedUrl={getYouTubeEmbedUrl}
               customTimes={customTimes}
@@ -294,6 +275,7 @@ export default function App() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              onAnimationComplete={handleQuoteAnimationComplete}
             />
           </motion.div>
         )}
@@ -305,24 +287,19 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="h-screen p-2"
+            className="h-screen"
           >
             <CompactMode
               timeLeft={timeLeft}
               isRunning={isRunning}
               activeTab={activeTab}
-              alwaysOnTop={alwaysOnTop}
-              autoStart={autoStart}
               customTimes={customTimes}
               currentQuote={getCurrentQuote()}
               isVietnamese={isVietnamese}
               onStart={handleStart}
               onPause={handlePause}
               onNext={handleNext}
-              onToggleAlwaysOnTop={() => setAlwaysOnTop(!alwaysOnTop)}
-              onToggleAutostart={() => toggleAutostart(!autoStart)}
               onTabChange={setActiveTab}
-              onLanguageToggle={() => setIsVietnamese(!isVietnamese)}
               getProgress={getProgress}
               formatTime={formatTime}
               getTabIcon={getTabIcon}
@@ -361,15 +338,10 @@ export default function App() {
                 setTimeLeft(customTimes[activeTab] * 60);
                 setIsRunning(false);
               }}
-              alwaysOnTop={alwaysOnTop}
-              onAlwaysOnTopToggle={() => setAlwaysOnTop(!alwaysOnTop)}
-              autoStart={autoStart}
-              onAutoStartToggle={() => toggleAutostart(!autoStart)}
               onMinimize={() => getCurrentWindow().minimize()}
               onSettings={() => {}}
               currentQuote={getCurrentQuote()}
               isVietnamese={isVietnamese}
-              onLanguageToggle={() => setIsVietnamese(!isVietnamese)}
               workTime={customTimes.focus}
               shortBreakTime={customTimes.shortBreak}
               longBreakTime={customTimes.longBreak}
@@ -402,8 +374,6 @@ export default function App() {
               timeLeft={timeLeft}
               isRunning={isRunning}
               activeTab={activeTab}
-              alwaysOnTop={alwaysOnTop}
-              autoStart={autoStart}
               customTimes={customTimes}
               currentQuote={getCurrentQuote()}
               isVietnamese={isVietnamese}
@@ -415,10 +385,7 @@ export default function App() {
               onStart={handleStart}
               onPause={handlePause}
               onNext={handleNext}
-              onToggleAlwaysOnTop={() => setAlwaysOnTop(!alwaysOnTop)}
-              onToggleAutostart={() => toggleAutostart(!autoStart)}
               onTabChange={setActiveTab}
-              onLanguageToggle={() => setIsVietnamese(!isVietnamese)}
               onYouTubeToggle={() => setIsYouTubeExpanded(!isYouTubeExpanded)}
               onYouTubeUrlChange={handleYouTubeUrlChange}
               onNewYoutubeUrlChange={setNewYoutubeUrl}
