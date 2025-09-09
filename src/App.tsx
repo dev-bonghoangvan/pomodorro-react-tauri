@@ -1,240 +1,266 @@
-import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion';
+import { Clock, Coffee, Timer } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Play, Pencil, ChevronUp, ChevronDown, Settings, Maximize2, Minimize2, Timer, Coffee, Clock, Pin, Power, Languages } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { getCurrentWindow } from '@tauri-apps/api/window'
-import { invoke } from '@tauri-apps/api/core'
-import { Tabs, TabsList, TabsTrigger } from './ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog'
-import { Label } from './ui/label'
-import { Button } from './ui/button'
-import { Card, CardContent, CardHeader } from './ui/card'
-import { Input } from './ui/input'
-import quotesData from './quotes/quotes.json'
+import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+
+import { CompactMode } from './components/CompactMode';
+import { FullMode } from './components/FullMode';
+import { MiniMode } from './components/MiniMode';
+import { TallMode } from './components/TallMode';
+import { useWindowSize } from './hooks/useWindowSize';
+import quotesData from './quotes/quotes.json';
 // @ts-ignore
-import VietnamFlag from './svgs/vietnam.svg'
+import USAFlag from './svgs/usa.svg';
 // @ts-ignore
-import USAFlag from './svgs/usa.svg'
-import { useWindowSize } from './hooks/useWindowSize'
-import { MiniMode } from './components/MiniMode'
-import { CompactMode } from './components/CompactMode'
-import { TallMode } from './components/TallMode'
-import { FullMode } from './components/FullMode'
+import VietnamFlag from './svgs/vietnam.svg';
 
 function useInterval(callback: () => void, delay: number | null) {
-  const saved = useRef(callback)
-  useEffect(() => { saved.current = callback }, [callback])
+  const saved = useRef(callback);
   useEffect(() => {
-    if (delay === null) return
-    const id = setInterval(() => saved.current(), delay)
-    return () => clearInterval(id)
-  }, [delay])
+    saved.current = callback;
+  }, [callback]);
+  useEffect(() => {
+    if (delay === null) return;
+    const id = setInterval(() => saved.current(), delay);
+    return () => clearInterval(id);
+  }, [delay]);
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("focus")
-  const [timeLeft, setTimeLeft] = useState(30 * 60) // 30 minutes in seconds
-  const [isRunning, setIsRunning] = useState(false)
-  const [isYouTubeExpanded, setIsYouTubeExpanded] = useState(false)
-  const [youtubeUrl, setYoutubeUrl] = useState("https://www.youtube.com/watch?v=YNDT833ahtc")
-  const [newYoutubeUrl, setNewYoutubeUrl] = useState("")
+  const [activeTab, setActiveTab] = useState("focus");
+  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+  const [isRunning, setIsRunning] = useState(false);
+  const [isYouTubeExpanded, setIsYouTubeExpanded] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState(
+    "https://www.youtube.com/watch?v=YNDT833ahtc"
+  );
+  const [newYoutubeUrl, setNewYoutubeUrl] = useState("");
   const [customTimes, setCustomTimes] = useState({
     focus: 30,
     shortBreak: 5,
     longBreak: 10,
-  })
-  const [editingTime, setEditingTime] = useState<string | null>(null)
-  const [tempTime, setTempTime] = useState("")
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
-  const [isVietnamese, setIsVietnamese] = useState(false) // Default to English
-  const [alwaysOnTop, setAlwaysOnTop] = useState(true)
-  const [autoStart, setAutoStart] = useState(false)
-  const intervalRef = useRef<number | null>(null)
-  
+  });
+  const [editingTime, setEditingTime] = useState<string | null>(null);
+  const [tempTime, setTempTime] = useState("");
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [isVietnamese, setIsVietnamese] = useState(false); // Default to English
+  const [alwaysOnTop, setAlwaysOnTop] = useState(true);
+  const [autoStart, setAutoStart] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+
   // Get window size and display mode
-  const { width, height, mode } = useWindowSize()
+  const { width, height, mode } = useWindowSize();
 
   useEffect(() => {
     const quoteInterval = setInterval(() => {
-      setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length)
-    }, 6000) // Tăng từ 5 giây lên 8 giây
+      setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length);
+    }, 6000); // Tăng từ 5 giây lên 8 giây
 
-    return () => clearInterval(quoteInterval)
-  }, [quotesData.length])
+    return () => clearInterval(quoteInterval);
+  }, [quotesData.length]);
 
   // Timer logic
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1)
-      }, 1000)
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
     } else {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+        clearInterval(intervalRef.current);
       }
     }
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+        clearInterval(intervalRef.current);
       }
-    }
-  }, [isRunning, timeLeft])
+    };
+  }, [isRunning, timeLeft]);
 
   // Update timer when tab changes
   useEffect(() => {
-    setIsRunning(false)
+    setIsRunning(false);
     switch (activeTab) {
       case "focus":
-        setTimeLeft(customTimes.focus * 60)
-        break
+        setTimeLeft(customTimes.focus * 60);
+        break;
       case "shortBreak":
-        setTimeLeft(customTimes.shortBreak * 60)
-        break
+        setTimeLeft(customTimes.shortBreak * 60);
+        break;
       case "longBreak":
-        setTimeLeft(customTimes.longBreak * 60)
-        break
+        setTimeLeft(customTimes.longBreak * 60);
+        break;
     }
-  }, [activeTab, customTimes])
+  }, [activeTab, customTimes]);
 
   // Sound notification when timer ends
   useEffect(() => {
     if (timeLeft === 0 && isRunning) {
       // beep sound
-        try {
-          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-          const o = ctx.createOscillator(); const g = ctx.createGain()
-          o.connect(g); g.connect(ctx.destination)
-          o.type = 'sine'; o.frequency.value = 880
-          g.gain.value = 0.1; o.start(); setTimeout(()=>{o.stop(); ctx.close()}, 600)
-        } catch {}
-      }
-  }, [timeLeft, isRunning])
+      try {
+        const ctx = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.type = "sine";
+        o.frequency.value = 880;
+        g.gain.value = 0.1;
+        o.start();
+        setTimeout(() => {
+          o.stop();
+          ctx.close();
+        }, 600);
+      } catch {}
+    }
+  }, [timeLeft, isRunning]);
 
   // Window always-on-top toggle via Rust (safer across versions)
   useEffect(() => {
-    invoke('set_always_on_top', { on: alwaysOnTop }).catch(()=>{})
-  }, [alwaysOnTop])
+    invoke("set_always_on_top", { on: alwaysOnTop }).catch(() => {});
+  }, [alwaysOnTop]);
 
   // Try read autostart state (Windows only; no-op on other OS)
   useEffect(() => {
-    invoke<boolean>('is_autostart_enabled').then(v => setAutoStart(!!v)).catch(() => {})
-  }, [])
+    invoke<boolean>("is_autostart_enabled")
+      .then((v) => setAutoStart(!!v))
+      .catch(() => {});
+  }, []);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
-  const handleStart = () => setIsRunning(true)
-  const handlePause = () => setIsRunning(false)
+  const handleStart = () => setIsRunning(true);
+  const handlePause = () => setIsRunning(false);
   const handleStop = () => {
-    setIsRunning(false)
+    setIsRunning(false);
     switch (activeTab) {
       case "focus":
-        setTimeLeft(customTimes.focus * 60)
-        break
+        setTimeLeft(customTimes.focus * 60);
+        break;
       case "shortBreak":
-        setTimeLeft(customTimes.shortBreak * 60)
-        break
+        setTimeLeft(customTimes.shortBreak * 60);
+        break;
       case "longBreak":
-        setTimeLeft(customTimes.longBreak * 60)
-        break
+        setTimeLeft(customTimes.longBreak * 60);
+        break;
     }
-  }
+  };
 
   const handleNext = () => {
-    const tabs = ["focus", "shortBreak", "longBreak"]
-    const currentIndex = tabs.indexOf(activeTab)
-    const nextIndex = (currentIndex + 1) % tabs.length
-    setActiveTab(tabs[nextIndex])
-  }
+    const tabs = ["focus", "shortBreak", "longBreak"];
+    const currentIndex = tabs.indexOf(activeTab);
+    const nextIndex = (currentIndex + 1) % tabs.length;
+    setActiveTab(tabs[nextIndex]);
+  };
 
   const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
-    return videoId ? `https://www.youtube.com/embed/${videoId[1]}?autoplay=0&controls=1` : ""
-  }
+    const videoId = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
+    );
+    if (!videoId) return "";
+    const params = new URLSearchParams({
+      autoplay: "0",
+      controls: "1",
+      rel: "0",
+      modestbranding: "1",
+      playsinline: "1",
+      iv_load_policy: "3",
+      // Note: avoid setting origin to a custom scheme to prevent validation issues in WebView
+    });
+    return `https://www.youtube-nocookie.com/embed/${
+      videoId[1]
+    }?${params.toString()}`;
+  };
 
   const handleTimeEdit = (type: string) => {
-    setEditingTime(type)
-    setTempTime(customTimes[type as keyof typeof customTimes].toString())
-  }
+    setEditingTime(type);
+    setTempTime(customTimes[type as keyof typeof customTimes].toString());
+  };
 
   const handleTimeSave = () => {
     if (editingTime && tempTime) {
-      const newTime = Number.parseInt(tempTime)
+      const newTime = Number.parseInt(tempTime);
       if (newTime > 0) {
         setCustomTimes((prev) => ({
           ...prev,
           [editingTime]: newTime,
-        }))
+        }));
       }
     }
-    setEditingTime(null)
-    setTempTime("")
-  }
+    setEditingTime(null);
+    setTempTime("");
+  };
 
   const handleYouTubeUrlChange = () => {
     if (newYoutubeUrl) {
-      setYoutubeUrl(newYoutubeUrl)
-      setNewYoutubeUrl("")
+      setYoutubeUrl(newYoutubeUrl);
+      setNewYoutubeUrl("");
     }
-  }
+  };
 
   const getProgress = () => {
-    const totalTime = customTimes[activeTab as keyof typeof customTimes] * 60
-    const progress = ((totalTime - timeLeft) / totalTime) * 100
-    return progress
-  }
+    const totalTime = customTimes[activeTab as keyof typeof customTimes] * 60;
+    const progress = ((totalTime - timeLeft) / totalTime) * 100;
+    return progress;
+  };
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
       case "focus":
-        return <Timer className="w-4 h-4" />
+        return <Timer className="w-4 h-4" />;
       case "shortBreak":
-        return <Coffee className="w-4 h-4" />
+        return <Coffee className="w-4 h-4" />;
       case "longBreak":
-        return <Clock className="w-4 h-4" />
+        return <Clock className="w-4 h-4" />;
       default:
-        return <Timer className="w-4 h-4" />
+        return <Timer className="w-4 h-4" />;
     }
-  }
+  };
 
   const getCurrentQuote = () => {
-    const quote = quotesData[currentQuoteIndex]
-    return isVietnamese ? quote.vi : quote.en
-  }
+    const quote = quotesData[currentQuoteIndex];
+    return isVietnamese ? quote.vi : quote.en;
+  };
 
   const toggleAutostart = async (enable: boolean) => {
     try {
-      await invoke('set_autostart', { enable })
-      setAutoStart(enable)
+      await invoke("set_autostart", { enable });
+      setAutoStart(enable);
     } catch (e) {
-      console.error(e)
-      alert('Không bật được Autostart trên Windows. Bạn có thể chạy ứng dụng với quyền phù hợp, hoặc bật bằng tay.')
+      console.error(e);
+      alert(
+        "Không bật được Autostart trên Windows. Bạn có thể chạy ứng dụng với quyền phù hợp, hoặc bật bằng tay."
+      );
     }
-  }
+  };
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm border border-white/10"
-      data-tauri-drag-region
-    >
-      {/* Drag Area - Only show in mini mode */}
-      {mode === 'mini' && (
-        <div 
-          className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 cursor-move z-50 flex items-center justify-center rounded-t-2xl"
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm border border-white/10 relative">
+      {/* Global Drag Area (frameless window drag handle) for non-mini modes */}
+      {mode !== "mini" && (
+        <div
+          className="absolute top-0 left-0 right-0 h-5 bg-gradient-to-r from-blue-500/5 to-purple-500/5 cursor-move z-50 flex items-center justify-center rounded-t-2xl"
           data-tauri-drag-region
+          aria-hidden
         >
-          <div className="w-4 h-0.5 bg-gray-400 rounded-full opacity-50"></div>
+          <div className="w-6 h-0.5 bg-gray-400/60 rounded-full" />
         </div>
       )}
 
       {/* Render different modes based on window size */}
-          <AnimatePresence mode="wait">
-        {mode === 'mini' && (
-            <motion.div
+      <AnimatePresence mode="wait">
+        {mode === "mini" && (
+          <motion.div
             key="mini"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -255,11 +281,24 @@ export default function App() {
               onToggleAutostart={() => toggleAutostart(!autoStart)}
               getProgress={getProgress}
               formatTime={formatTime}
+              currentQuote={getCurrentQuote()}
+              youtubeUrl={youtubeUrl}
+              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
+              customTimes={customTimes}
+              onWorkTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, focus: value }))
+              }
+              onShortBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
+              }
+              onLongBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
+              }
             />
-            </motion.div>
+          </motion.div>
         )}
 
-        {mode === 'compact' && (
+        {mode === "compact" && (
           <motion.div
             key="compact"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -287,11 +326,22 @@ export default function App() {
               getProgress={getProgress}
               formatTime={formatTime}
               getTabIcon={getTabIcon}
+              youtubeUrl={youtubeUrl}
+              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
+              onWorkTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, focus: value }))
+              }
+              onShortBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
+              }
+              onLongBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
+              }
             />
           </motion.div>
         )}
 
-        {mode === 'tall' && (
+        {mode === "tall" && (
           <motion.div
             key="tall"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -308,8 +358,8 @@ export default function App() {
               onPlayPause={isRunning ? handlePause : handleStart}
               onSkip={handleNext}
               onReset={() => {
-                setTimeLeft(customTimes[activeTab] * 60)
-                setIsRunning(false)
+                setTimeLeft(customTimes[activeTab] * 60);
+                setIsRunning(false);
               }}
               alwaysOnTop={alwaysOnTop}
               onAlwaysOnTopToggle={() => setAlwaysOnTop(!alwaysOnTop)}
@@ -323,14 +373,23 @@ export default function App() {
               workTime={customTimes.focus}
               shortBreakTime={customTimes.shortBreak}
               longBreakTime={customTimes.longBreak}
-              onWorkTimeChange={(value) => setCustomTimes(prev => ({ ...prev, focus: value }))}
-              onShortBreakTimeChange={(value) => setCustomTimes(prev => ({ ...prev, shortBreak: value }))}
-              onLongBreakTimeChange={(value) => setCustomTimes(prev => ({ ...prev, longBreak: value }))}
+              onWorkTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, focus: value }))
+              }
+              onShortBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
+              }
+              onLongBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
+              }
+              customTimes={customTimes}
+              youtubeUrl={youtubeUrl}
+              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
             />
           </motion.div>
         )}
 
-        {mode === 'full' && (
+        {mode === "full" && (
           <motion.div
             key="full"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -375,5 +434,5 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }

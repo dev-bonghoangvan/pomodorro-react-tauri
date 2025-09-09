@@ -1,28 +1,35 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '../ui/button'
-import { Card, CardContent, CardHeader } from '../ui/card'
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
-import { Pin, Power, Timer, Coffee, Clock } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    Minus, MoreVertical, Pause, Play, Plus, SkipForward, Volume2, VolumeX, X
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Button } from '../ui/button';
 
 interface CompactModeProps {
-  timeLeft: number
-  isRunning: boolean
-  activeTab: string
-  alwaysOnTop: boolean
-  autoStart: boolean
-  customTimes: { focus: number; shortBreak: number; longBreak: number }
-  currentQuote: string
-  isVietnamese: boolean
-  onStart: () => void
-  onPause: () => void
-  onNext: () => void
-  onToggleAlwaysOnTop: () => void
-  onToggleAutostart: () => void
-  onTabChange: (tab: string) => void
-  onLanguageToggle: () => void
-  getProgress: () => number
-  formatTime: (seconds: number) => string
-  getTabIcon: (tab: string) => JSX.Element
+  timeLeft: number;
+  isRunning: boolean;
+  activeTab: string;
+  alwaysOnTop: boolean;
+  autoStart: boolean;
+  customTimes: { focus: number; shortBreak: number; longBreak: number };
+  currentQuote: string;
+  isVietnamese: boolean;
+  onStart: () => void;
+  onPause: () => void;
+  onNext: () => void;
+  onToggleAlwaysOnTop: () => void;
+  onToggleAutostart: () => void;
+  onTabChange: (tab: string) => void;
+  onLanguageToggle: () => void;
+  getProgress: () => number;
+  formatTime: (seconds: number) => string;
+  getTabIcon: (tab: string) => JSX.Element;
+  youtubeUrl: string;
+  getYouTubeEmbedUrl: (url: string) => string;
+  onWorkTimeChange: (value: number) => void;
+  onShortBreakTimeChange: (value: number) => void;
+  onLongBreakTimeChange: (value: number) => void;
 }
 
 export function CompactMode({
@@ -43,118 +50,63 @@ export function CompactMode({
   onLanguageToggle,
   getProgress,
   formatTime,
-  getTabIcon
+  getTabIcon,
+  youtubeUrl,
+  getYouTubeEmbedUrl,
+  onWorkTimeChange,
+  onShortBreakTimeChange,
+  onLongBreakTimeChange,
 }: CompactModeProps) {
+  const [showSettings, setShowSettings] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [autoStartNext, setAutoStartNext] = useState(false);
+  const [roundsPerCycle, setRoundsPerCycle] = useState(4);
+  const [quoteSpeed, setQuoteSpeed] = useState("Normal");
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Close settings when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
+        setShowSettings(false);
+      }
+    }
+
+    if (showSettings) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSettings]);
+
+  const modeLabel =
+    activeTab === "focus"
+      ? "Focus mode"
+      : activeTab === "shortBreak"
+      ? "Short Break"
+      : "Long Break";
+
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl shadow-xl backdrop-blur-sm border border-white/10">
-      {/* Header with Icons */}
-      <div className="flex justify-end gap-1 p-2">
-        <motion.button
-          onClick={onToggleAlwaysOnTop}
-          className={`p-1 rounded-full transition-colors ${
-            alwaysOnTop 
-              ? 'bg-primary text-primary-foreground' 
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-          }`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          title="Always on Top"
-        >
-          <Pin className="w-3 h-3" />
-        </motion.button>
-        <motion.button
-          onClick={onToggleAutostart}
-          className={`p-1 rounded-full transition-colors ${
-            autoStart 
-              ? 'bg-primary text-primary-foreground' 
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-          }`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          title="Start with Windows"
-        >
-          <Power className="w-3 h-3" />
-        </motion.button>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Left: Timer Section */}
-        <div className="flex-1 flex flex-col items-center justify-center p-3">
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={onTabChange} className="w-full mb-3">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-0.5 rounded-md border-0">
-              <TabsTrigger 
-                value="focus" 
-                className="text-xs flex items-center justify-center gap-1 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-800 text-gray-600 data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none data-[state=inactive]:border-0 data-[state=inactive]:ring-0 py-1"
-              >
-                {getTabIcon("focus")}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="shortBreak" 
-                className="text-xs flex items-center justify-center gap-1 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-800 text-gray-600 data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none data-[state=inactive]:border-0 data-[state=inactive]:ring-0 py-1"
-              >
-                {getTabIcon("shortBreak")}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="longBreak" 
-                className="text-xs flex items-center justify-center gap-1 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-800 text-gray-600 data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none data-[state=inactive]:border-0 data-[state=inactive]:ring-0 py-1"
-              >
-                {getTabIcon("longBreak")}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Compact Timer Display */}
-          <div className="relative w-20 h-20 mb-3">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                className="text-muted/30"
-              />
-              <motion.circle
-                cx="50"
-                cy="50"
-                r="40"
-                stroke="url(#compactGradient)"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 40}`}
-                initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                animate={{
-                  strokeDashoffset: 2 * Math.PI * 40 * (1 - getProgress() / 100),
-                }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              />
-              <defs>
-                <linearGradient id="compactGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#059669" />
-                  <stop offset="100%" stopColor="#10b981" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                className="text-sm font-mono font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
-                key={timeLeft}
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {formatTime(timeLeft)}
-              </motion.div>
-            </div>
+    <div className="relative h-full" ref={settingsRef}>
+      {/* Main CompactMode Interface */}
+      <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-4">
+        {/* Header with Timer and Controls */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-mono font-bold text-white">
+              {formatTime(timeLeft)}
+            </span>
+            <span className="text-sm text-gray-300 font-medium">
+              ({modeLabel})
+            </span>
           </div>
 
-          {/* Control Buttons */}
-          <div className="flex justify-center gap-2">
+          <div className="flex items-center gap-2">
             <AnimatePresence mode="wait">
               {!isRunning ? (
                 <motion.div
@@ -166,9 +118,9 @@ export function CompactMode({
                   <Button
                     onClick={onStart}
                     size="sm"
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm font-semibold shadow-md"
+                    className="h-8 w-8 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg flex items-center justify-center p-0"
                   >
-                    START
+                    <Play className="h-4 w-4 ml-0.5" />
                   </Button>
                 </motion.div>
               ) : (
@@ -182,62 +134,256 @@ export function CompactMode({
                   <Button
                     onClick={onPause}
                     size="sm"
-                    className="bg-white hover:bg-gray-50 text-red-600 border border-gray-200 px-3 py-2 text-sm font-semibold shadow-md"
+                    className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
                   >
-                    PAUSE
+                    <Pause className="h-4 w-4" />
                   </Button>
                   <Button
                     onClick={onNext}
                     size="sm"
-                    className="bg-red-600 hover:bg-red-700 text-white px-2 py-2 shadow-md"
+                    className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
                   >
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M7 6v12l10-6z" />
-                      <path d="M17 6h2v12h-2z" />
-                    </svg>
+                    <SkipForward className="h-4 w-4" />
                   </Button>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Settings Button */}
+            <Button
+              onClick={() => setShowSettings(!showSettings)}
+              size="sm"
+              className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Right: Quote Section */}
-        <div className="w-32 flex flex-col justify-center p-3 border-l border-border/50">
+        {/* YouTube Frame */}
+        <div className="w-full overflow-hidden rounded-lg border border-gray-600 mb-4">
+          <div className="aspect-video w-full">
+            <iframe
+              src={getYouTubeEmbedUrl(youtubeUrl)}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              referrerPolicy="no-referrer"
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+              allowFullScreen
+            />
+          </div>
+        </div>
+
+        {/* Quote and Language Toggle */}
+        <div className="flex-1 flex flex-col justify-between">
+          <div className="text-center">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={`${currentQuote}-${isVietnamese}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.3 }}
+                className="text-sm text-emerald-400 font-medium italic mb-2"
+              >
+                "{currentQuote}"
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
           {/* Language Toggle */}
-          <div className="flex justify-center mb-2">
-            <motion.button
+          <div className="flex justify-center">
+            <Button
               onClick={onLanguageToggle}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors border ${
-                isVietnamese 
-                  ? 'bg-emerald-100 border-emerald-500 text-emerald-700' 
-                  : 'bg-blue-100 border-blue-500 text-blue-700'
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-3 rounded-lg ${
+                isVietnamese
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
               }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              title={isVietnamese ? "Switch to English" : "Chuyển sang tiếng Việt"}
             >
               {isVietnamese ? "🇻🇳" : "🇺🇸"}
-            </motion.button>
+            </Button>
           </div>
-
-          {/* Quote */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${currentQuote}-${isVietnamese}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
-            >
-              <p className="text-xs text-emerald-600 font-medium leading-tight">
-                {currentQuote}
-              </p>
-            </motion.div>
-          </AnimatePresence>
         </div>
       </div>
+
+      {/* Settings Panel Dropdown */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-50"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Settings Header */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-600">
+              <h2 className="text-lg font-bold text-white">Settings</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-6 h-6 rounded-full bg-gray-600 hover:bg-gray-500 flex items-center justify-center text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Quick Settings */}
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+                Quick Settings
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 text-sm">Auto start next</span>
+                  <button
+                    onClick={() => setAutoStartNext(!autoStartNext)}
+                    className={`w-12 h-6 rounded-full transition-colors ${
+                      autoStartNext ? "bg-emerald-500" : "bg-gray-600"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                        autoStartNext ? "translate-x-6" : "translate-x-0.5"
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 text-sm">
+                    Rounds per cycle
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))
+                      }
+                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                    >
+                      <Minus className="h-3 w-3 text-white" />
+                    </button>
+                    <span className="text-white font-mono w-8 text-center">
+                      {roundsPerCycle}
+                    </span>
+                    <button
+                      onClick={() => setRoundsPerCycle(roundsPerCycle + 1)}
+                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                    >
+                      <Plus className="h-3 w-3 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Durations */}
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+                Durations
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 text-sm">Focus</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        onWorkTimeChange(Math.max(1, customTimes.focus - 1))
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                    >
+                      -1m
+                    </button>
+                    <span className="text-white font-mono w-12 text-center">
+                      {customTimes.focus}m
+                    </span>
+                    <button
+                      onClick={() => onWorkTimeChange(customTimes.focus + 1)}
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                    >
+                      +1m
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 text-sm">Short</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        onShortBreakTimeChange(
+                          Math.max(1, customTimes.shortBreak - 1)
+                        )
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                    >
+                      -1m
+                    </button>
+                    <span className="text-white font-mono w-12 text-center">
+                      {customTimes.shortBreak}m
+                    </span>
+                    <button
+                      onClick={() =>
+                        onShortBreakTimeChange(customTimes.shortBreak + 1)
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                    >
+                      +1m
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 text-sm">Long</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        onLongBreakTimeChange(
+                          Math.max(1, customTimes.longBreak - 1)
+                        )
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                    >
+                      -1m
+                    </button>
+                    <span className="text-white font-mono w-12 text-center">
+                      {customTimes.longBreak}m
+                    </span>
+                    <button
+                      onClick={() =>
+                        onLongBreakTimeChange(customTimes.longBreak + 1)
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                    >
+                      +1m
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Media */}
+            <div>
+              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+                Media
+              </h3>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 text-sm">Mute YouTube</span>
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-4 w-4 text-white" />
+                  ) : (
+                    <Volume2 className="h-4 w-4 text-white" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  )
+  );
 }
