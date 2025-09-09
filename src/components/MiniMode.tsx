@@ -56,6 +56,8 @@ export function MiniMode({
   const [englishComplete, setEnglishComplete] = useState(false);
   const [vietnameseComplete, setVietnameseComplete] = useState(false);
   const [animationTarget, setAnimationTarget] = useState("-120%");
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
@@ -160,6 +162,30 @@ export function MiniMode({
     }
   }, [englishComplete, vietnameseComplete, isAnimationComplete, onAnimationComplete]);
 
+  // Handle hover with delay
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 2000); // 2 seconds delay
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Close settings when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -188,7 +214,11 @@ export function MiniMode({
       : "L";
 
   return (
-    <div className="relative h-full group">
+    <div 
+      className="relative h-full group"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Main MiniMode Interface */}
       <div
         className="h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800  relative shadow-2xl overflow-hidden"
@@ -197,7 +227,11 @@ export function MiniMode({
         {/* Left controls (hover to reveal) - Spotify style */}
         <div className="absolute left-0 top-0 h-full w-6 z-50 pointer-events-auto">
           <div
-            className="pt-1.5 pl-1.5 flex flex-col items-start gap-0.5 h-full opacity-0 group-hover:opacity-100 -translate-x-8 group-hover:translate-x-0 transition-all duration-200 ease-out"
+            className={`pt-1.5 pl-1.5 flex flex-col justify-between items-start h-full transition-all duration-200 ease-out ${
+              isHovered 
+                ? 'opacity-100 translate-x-0' 
+                : 'opacity-0 -translate-x-8'
+            }`}
             data-tauri-drag-region
           >
             {/* Close button */}
@@ -211,18 +245,21 @@ export function MiniMode({
                   await getCurrentWindow().close();
                 } catch {}
               }}
-              data-tauri-drag-region="false"
+              data-tauri-drag-region
             >
               <X className="h-2 w-2" />
             </button>
 
             {/* Drag handle */}
             <div
-              className="h-4 w-3 flex pt-4 items-center justify-center cursor-move text-white/90 group-hover:pointer-events-auto pointer-events-none"
+              className="h-6 w-3 flex items-center justify-center  text-white/90 pointer-events-auto"
               data-tauri-drag-region
               title="Drag window"
             >
-              <GripVertical className="h-3 w-3" />
+              <GripVertical 
+                className="h-3 w-3 cursor-move" 
+                data-tauri-drag-region
+              />
             </div>
           </div>
         </div>
@@ -230,7 +267,9 @@ export function MiniMode({
          {/* Main Content Layout - Flex Row */}
          <div className="flex items-center py-3 h-full">
            {/* Middle section - Thumbnail, Timer and Quotes (animated, can be hidden behind right section) */}
-           <div className="flex items-center gap-2 group-hover:translate-x-8 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2">
+           <div className={`flex items-center gap-2 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2 ${
+             isHovered ? 'translate-x-8' : 'translate-x-0'
+           }`}>
              {/* YouTube Thumbnail */}
              <div ref={thumbnailRef} className="w-8 h-8 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0">
                <iframe
