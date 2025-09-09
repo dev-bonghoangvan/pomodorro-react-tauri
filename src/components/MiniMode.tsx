@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { invoke } from '@tauri-apps/api/core';
 
 import { Button } from '../ui/button';
 
@@ -242,10 +242,11 @@ export function MiniMode({
               onClick={async (e) => {
                 e.stopPropagation();
                 try {
-                  await getCurrentWindow().close();
-                } catch {}
+                  await invoke('close_window');
+                } catch (error) {
+                }
               }}
-              data-tauri-drag-region
+              data-tauri-drag-region="false"
             >
               <X className="h-2 w-2" />
             </button>
@@ -253,7 +254,6 @@ export function MiniMode({
             {/* Drag handle */}
             <div
               className="h-6 w-3 flex items-center justify-center  text-white/90 pointer-events-auto"
-              data-tauri-drag-region
               title="Drag window"
             >
               <GripVertical 

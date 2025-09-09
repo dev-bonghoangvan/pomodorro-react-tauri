@@ -56,12 +56,19 @@ fn set_autostart(_enable: bool) -> Result<(), String> {
   Err("Autostart chỉ hỗ trợ trên Windows trong bản mẫu này.".into())
 }
 
+#[tauri::command]
+fn close_window(app: AppHandle) -> Result<(), String> {
+  let window = app.get_webview_window("main").ok_or("Window not found")?;
+  window.close().map_err(|e| e.to_string())
+}
+
 fn main() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
       set_always_on_top,
       set_autostart,
-      is_autostart_enabled
+      is_autostart_enabled,
+      close_window
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
