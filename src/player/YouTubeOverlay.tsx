@@ -91,6 +91,29 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
     return () => window.removeEventListener('resize', handleResize)
   }, [updateOverlayPosition])
 
+  // Fix height for div bọc iframe
+  useEffect(() => {
+    const fixIframeContainer = () => {
+      // Tìm div bọc iframe trong overlay container
+      const iframe = document.querySelector('iframe[src*="youtube"]')
+      if (iframe && iframe.parentElement) {
+        iframe.parentElement.style.height = '100%'
+        iframe.parentElement.style.width = '100%'
+        iframe.parentElement.style.display = 'flex'
+        iframe.parentElement.style.flexDirection = 'column'
+      }
+    }
+
+    // Fix immediately
+    fixIframeContainer()
+
+    // Fix after any DOM changes
+    const observer = new MutationObserver(fixIframeContainer)
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    return () => observer.disconnect()
+  }, [])
+
   const setVideoId = useCallback((id: string) => {
     setCurrentVideoId(prev => prev === id ? prev : id)
   }, [])
@@ -123,7 +146,6 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
     }}>
       {/* Single iframe - mounted once, never unmounted */}
       <InPortal node={portalNodeRef.current}>
-        <div style={{ width: '100%', height: '100%' }}>
           <iframe
             key="youtube-player-single" // Fixed key - never changes
             src={url(currentVideoId)}
@@ -137,27 +159,10 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
-        </div>
       </InPortal>
 
       {/* Overlay container - positioned over anchor */}
-      <div style={{
-        ...overlayStyle,
-        border: '2px solid red', // Debug border
-        backgroundColor: 'rgba(255,0,0,0.1)' // Debug background
-      }}>
-        <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          color: 'white', 
-          fontSize: '12px', 
-          background: 'red',
-          padding: '2px',
-          zIndex: 1001
-        }}>
-          DEBUG: {Math.round(Number(overlayStyle.width))}x{Math.round(Number(overlayStyle.height))}
-        </div>
+      <div style={overlayStyle}>
         <OutPortal node={portalNodeRef.current} />
       </div>
 
