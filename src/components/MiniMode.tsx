@@ -8,6 +8,9 @@ import { useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
 import { Button } from '../ui/button';
+import { toggleExpand, COLLAPSED_W, EXPANDED_W } from '../ui/toggleExpand';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+import SettingsPanel from './SettingsPanel';
 
 interface MiniModeProps {
   timeLeft: number;
@@ -26,6 +29,7 @@ interface MiniModeProps {
   onShortBreakTimeChange: (value: number) => void;
   onLongBreakTimeChange: (value: number) => void;
   onAnimationComplete?: () => void;
+  onYouTubeUrlChange?: (url: string) => void; // optional to avoid breaking existing callers
 }
 
 export function MiniMode({
@@ -45,11 +49,13 @@ export function MiniMode({
   onShortBreakTimeChange,
   onLongBreakTimeChange,
   onAnimationComplete,
+  onYouTubeUrlChange,
 }: MiniModeProps) {
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // logical state (expanded)
   const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
+  const [showQuotes, setShowQuotes] = useState(true);
   const [animationDuration, setAnimationDuration] = useState(15);
   const [animationKey, setAnimationKey] = useState(0);
   const [isAnimationComplete, setIsAnimationComplete] = useState(false);
@@ -61,6 +67,7 @@ export function MiniMode({
   const settingsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
+  // (SettingsPanel will manage temporary YouTube input state)
 
   // Calculate animation duration based on actual UI dimensions
   useEffect(() => {
@@ -186,25 +193,20 @@ export function MiniMode({
     };
   }, []);
 
-  // Close settings when clicking outside
+  // Sync showSettings with actual window width (in case user resizes manually)
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        settingsRef.current &&
-        !settingsRef.current.contains(event.target as Node)
-      ) {
-        setShowSettings(false);
-      }
-    }
-
-    if (showSettings) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showSettings]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const win = getCurrentWindow();
+        const size = await win.outerSize();
+        if (!cancelled) {
+          setShowSettings(size.width > COLLAPSED_W + 2);
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const modeLabel =
     activeTab === "focus"
@@ -267,7 +269,7 @@ export function MiniMode({
          {/* Main Content Layout - Flex Row */}
          <div className="flex items-center py-3 h-full">
            {/* Middle section - Thumbnail, Timer and Quotes (animated, can be hidden behind right section) */}
-           <div className={`flex items-center gap-2 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2 ${
+           <div className={`flex items-center gap-2 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2 pr-16 ${
              isHovered ? 'translate-x-8' : 'translate-x-0'
            }`}>
              {/* YouTube Thumbnail */}
@@ -285,25 +287,24 @@ export function MiniMode({
 
              {/* Timer and Quotes Display */}
              <div ref={containerRef} className="flex flex-col gap-0 min-w-0 flex-1">
-               {/* English Quote */}
-               <div className="overflow-hidden">
-                 <motion.div
-                   key={`${animationKey}-${currentQuote.en}-english`}
-                   className="whitespace-nowrap text-xs text-blue-400 font-medium italic"
-                   initial={{ x: "100%" }}
-                   animate={{ x: animationTarget }}
-                   transition={{ duration: animationDuration, ease: "linear" }}
-                   onAnimationComplete={() => {
-                     if (!englishComplete) {
-                       setEnglishComplete(true);
-                     }
-                   }}
-                 >
-                   "{currentQuote.en}"
-                 </motion.div>
-               </div>
-               
-               {/* Timer Display */}
+               {showQuotes && (
+                 <div className="overflow-hidden">
+                   <motion.div
+                     key={`${animationKey}-${currentQuote.en}-english-${showQuotes}`}
+                     className="whitespace-nowrap text-xs text-blue-400 font-medium italic"
+                     initial={{ x: "100%" }}
+                     animate={{ x: animationTarget }}
+                     transition={{ duration: animationDuration, ease: "linear" }}
+                     onAnimationComplete={() => {
+                       if (!englishComplete) {
+                         setEnglishComplete(true);
+                       }
+                     }}
+                   >
+                     "{currentQuote.en}"
+                   </motion.div>
+                 </div>
+               )}
                <div className="flex items-baseline gap-3">
                  <span className="text-2xl font-mono font-bold text-white whitespace-nowrap">
                    {formatTime(timeLeft)}
@@ -312,29 +313,29 @@ export function MiniMode({
                    ({modeLabel})
                  </span>
                </div>
-               
-               {/* Vietnamese Quote */}
-               <div className="overflow-hidden">
-                 <motion.div
-                   key={`${animationKey}-${currentQuote.vi}-vietnamese`}
-                   className="whitespace-nowrap text-xs text-emerald-400 font-medium italic"
-                   initial={{ x: "100%" }}
-                   animate={{ x: animationTarget }}
-                   transition={{ duration: animationDuration, ease: "linear" }}
-                   onAnimationComplete={() => {
-                     if (!vietnameseComplete) {
-                       setVietnameseComplete(true);
-                     }
-                   }}
-                 >
-                   "{currentQuote.vi}"
-                 </motion.div>
-               </div>
+               {showQuotes && (
+                 <div className="overflow-hidden">
+                   <motion.div
+                     key={`${animationKey}-${currentQuote.vi}-vietnamese-${showQuotes}`}
+                     className="whitespace-nowrap text-xs text-emerald-400 font-medium italic"
+                     initial={{ x: "100%" }}
+                     animate={{ x: animationTarget }}
+                     transition={{ duration: animationDuration, ease: "linear" }}
+                     onAnimationComplete={() => {
+                       if (!vietnameseComplete) {
+                         setVietnameseComplete(true);
+                       }
+                     }}
+                   >
+                     "{currentQuote.vi}"
+                   </motion.div>
+                 </div>
+               )}
              </div>
            </div>
 
-           {/* Right section - Control Buttons (completely fixed position) */}
-           <div className="flex items-center gap-2 flex-shrink-0 relative z-10 pr-4">
+           {/* Right section - Control Buttons (anchored) */}
+           <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 ${showSettings ? 'right-60' : 'right-2'}`}>
             {/* Control Buttons */}
             <div className="flex items-center gap-2">
               <AnimatePresence mode="wait">
@@ -380,20 +381,14 @@ export function MiniMode({
               </AnimatePresence>
             </div>
 
-            {/* Settings button - Fixed position */}
+            {/* Settings button - triggers expand / collapse */}
             <button
-              onClick={() => {
-                console.log(
-                  "Settings button clicked, current state:",
-                  showSettings
-                );
-                setShowSettings(!showSettings);
+              onClick={async () => {
+                const next = !showSettings;
+                setShowSettings(next);
+                await toggleExpand('right');
               }}
-              className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 ${
-                showSettings
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                  : "bg-gray-600 hover:bg-gray-500 text-white"
-              }`}
+              className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 ${showSettings ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}
             >
               <MoreVertical className="h-3 w-3" />
             </button>
@@ -401,185 +396,25 @@ export function MiniMode({
         </div>
 
       </div>
-
-      {/* Settings Panel Dropdown */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full right-0 mt-2 w-80 bg-gray-800  shadow-2xl border border-gray-600 p-6 z-50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div>
-              {/* Settings Header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-600">
-                <h2 className="text-lg font-bold text-white">Settings</h2>
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="w-6 h-6 rounded-full bg-gray-600 hover:bg-gray-500 flex items-center justify-center text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Quick Settings */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                  Quick Settings
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">
-                      Rounds per cycle
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))
-                        }
-                        className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
-                      >
-                        <Minus className="h-3 w-3 text-white" />
-                      </button>
-                      <span className="text-white font-mono w-8 text-center">
-                        {roundsPerCycle}
-                      </span>
-                      <button
-                        onClick={() => setRoundsPerCycle(roundsPerCycle + 1)}
-                        className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
-                      >
-                        <Plus className="h-3 w-3 text-white" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Durations */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                  Durations
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">Focus</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          onWorkTimeChange(Math.max(1, customTimes.focus - 1))
-                        }
-                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
-                      >
-                        -1m
-                      </button>
-                      <span className="text-white font-mono w-12 text-center">
-                        {customTimes.focus}m
-                      </span>
-                      <button
-                        onClick={() => onWorkTimeChange(customTimes.focus + 1)}
-                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
-                      >
-                        +1m
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">Short</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          onShortBreakTimeChange(
-                            Math.max(1, customTimes.shortBreak - 1)
-                          )
-                        }
-                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
-                      >
-                        -1m
-                      </button>
-                      <span className="text-white font-mono w-12 text-center">
-                        {customTimes.shortBreak}m
-                      </span>
-                      <button
-                        onClick={() =>
-                          onShortBreakTimeChange(customTimes.shortBreak + 1)
-                        }
-                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
-                      >
-                        +1m
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">Long</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          onLongBreakTimeChange(
-                            Math.max(1, customTimes.longBreak - 1)
-                          )
-                        }
-                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
-                      >
-                        -1m
-                      </button>
-                      <span className="text-white font-mono w-12 text-center">
-                        {customTimes.longBreak}m
-                      </span>
-                      <button
-                        onClick={() =>
-                          onLongBreakTimeChange(customTimes.longBreak + 1)
-                        }
-                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
-                      >
-                        +1m
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quotes */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                  Quotes
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Speed</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-white text-sm">{quoteSpeed}</span>
-                    <button className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center">
-                      <ChevronDown className="h-3 w-3 text-white" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Media */}
-              <div>
-                <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                  Media
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Mute YouTube</span>
-                  <button
-                    onClick={() => setIsMuted(!isMuted)}
-                    className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
-                  >
-                    {isMuted ? (
-                      <VolumeX className="h-4 w-4 text-white" />
-                    ) : (
-                      <Volume2 className="h-4 w-4 text-white" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showSettings && (
+        <SettingsPanel
+          onClose={async () => { setShowSettings(false); await toggleExpand('right'); }}
+          roundsPerCycle={roundsPerCycle}
+          setRoundsPerCycle={setRoundsPerCycle}
+          customTimes={customTimes}
+          onWorkTimeChange={onWorkTimeChange}
+          onShortBreakTimeChange={onShortBreakTimeChange}
+          onLongBreakTimeChange={onLongBreakTimeChange}
+          quoteSpeed={quoteSpeed}
+          setQuoteSpeed={setQuoteSpeed}
+          showQuotes={showQuotes}
+          setShowQuotes={setShowQuotes}
+          isMuted={isMuted}
+          setIsMuted={setIsMuted}
+          youtubeUrl={youtubeUrl}
+          onYouTubeUrlChange={onYouTubeUrlChange}
+        />
+      )}
     </div>
   );
 }

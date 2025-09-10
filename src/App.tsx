@@ -60,8 +60,17 @@ export default function App() {
   //   return () => clearInterval(quoteInterval);
   // }, [quotesData.length]);
 
+  // When a quote animation completes (MiniMode) pick a new random quote (avoid immediate repeat)
   const handleQuoteAnimationComplete = () => {
-    setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length);
+    setCurrentQuoteIndex((prev) => {
+      if (quotesData.length <= 1) return prev;
+      let next = prev;
+      // Ensure different index; loop will run at most length-1 times
+      while (next === prev) {
+        next = Math.floor(Math.random() * quotesData.length);
+      }
+      return next;
+    });
   };
 
   // Timer logic
@@ -276,6 +285,7 @@ export default function App() {
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
               onAnimationComplete={handleQuoteAnimationComplete}
+              onYouTubeUrlChange={setYoutubeUrl}
             />
           </motion.div>
         )}
