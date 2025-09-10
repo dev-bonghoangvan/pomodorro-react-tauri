@@ -331,7 +331,7 @@ export function CompactMode({
     animate={{ opacity: 1, y: 0, scale: 1 }}
     exit={{ opacity: 0, y: -6, scale: 0.96 }}
     transition={{ duration: 0.18, ease: 'easeOut' }}
-    className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-50"
+    className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
     role="dialog"
     aria-label="Compact settings"
