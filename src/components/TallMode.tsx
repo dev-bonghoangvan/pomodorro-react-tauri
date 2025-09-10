@@ -9,7 +9,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
-import { PlayerSlot } from '../player/PlayerSlot';
+import { YouTubeAnchor } from '../player/YouTubeOverlay';
 
 interface TallModeProps {
   timeLeft: number;
@@ -199,19 +199,17 @@ export function TallMode({
             </div>
           </div>
 
-          {/* YouTube Section - Always at top */}
-          <motion.div
-            className="w-full"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-700">
-              <div className="w-full h-full">
-                <PlayerSlot className="w-full h-full" />
-              </div>
-            </div>
-          </motion.div>
+           {/* YouTube Section - Always at top */}
+           <motion.div
+             className="w-full"
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.5 }}
+           >
+             <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-700">
+               <YouTubeAnchor className="w-full h-full" />
+             </div>
+           </motion.div>
 
           {/* Main Content - Responsive Layout */}
           <div className="flex-1 flex flex-col xl:flex-row gap-4">

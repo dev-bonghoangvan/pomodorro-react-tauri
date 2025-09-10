@@ -11,7 +11,7 @@ import { Button } from '../ui/button';
 import { toggleExpand } from '../ui/toggleExpand';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import SettingsPanel from './SettingsPanel';
-import { PlayerSlot } from '../player/PlayerSlot';
+import { YouTubeAnchor } from '../player/YouTubeOverlay';
 
 interface MiniModeProps {
   timeLeft: number;
@@ -264,9 +264,7 @@ export function MiniMode({
            }`}>
              {/* YouTube Thumbnail */}
              <div ref={thumbnailRef} className="w-8 h-8 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0">
-               <div className="w-full h-full">
-                 <PlayerSlot className="w-full h-full" />
-               </div>
+               <YouTubeAnchor className="w-full h-full" />
              </div>
 
              {/* Timer and Quotes Display */}

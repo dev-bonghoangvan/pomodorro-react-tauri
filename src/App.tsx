@@ -11,12 +11,11 @@ import { MiniMode } from './components/MiniMode';
 import { TallMode } from './components/TallMode';
 import { useWindowSize } from './hooks/useWindowSize';
 import quotesData from './quotes/quotes.json';
-import { YouTubeProvider, useYouTube } from './player/YouTubeProvider';
+import { YouTubeOverlayProvider, useYouTubeOverlay } from './player/YouTubeOverlay';
 // @ts-ignore
 import USAFlag from './svgs/usa.svg';
 // @ts-ignore
 import VietnamFlag from './svgs/vietnam.svg';
-import { PlayerOverlayProvider } from './player/PlayerOverlay';
 
 function useInterval(callback: () => void, delay: number | null) {
   const saved = useRef(callback);
@@ -49,7 +48,7 @@ function AppContent() {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVietnamese, setIsVietnamese] = useState(false); // Default to English
   const intervalRef = useRef<number | null>(null);
-  const { setVideoId } = useYouTube();
+  const { setVideoId } = useYouTubeOverlay();
 
   // Get window size and display mode
   const { width, height, mode } = useWindowSize();
@@ -421,8 +420,8 @@ function AppContent() {
 
 export default function App() {
   return (
-    <YouTubeProvider>
+    <YouTubeOverlayProvider>
       <AppContent />
-    </YouTubeProvider>
+    </YouTubeOverlayProvider>
   );
 }

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../ui/button';
-import { PlayerSlot } from '../player/PlayerSlot';
+import { YouTubeAnchor } from '../player/YouTubeOverlay';
 
 interface CompactModeProps {
   timeLeft: number;
@@ -236,7 +236,7 @@ export function CompactMode({
         {/* YouTube Frame */}
         <div className="w-full overflow-hidden border border-gray-600 mb-4">
           <div className="aspect-video w-full h-full">
-            <PlayerSlot className="w-full h-full" />
+            <YouTubeAnchor className="w-full h-full" />
           </div>
         </div>
 

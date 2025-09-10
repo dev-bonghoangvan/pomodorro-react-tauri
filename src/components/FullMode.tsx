@@ -11,7 +11,7 @@ import USAFlag from '../svgs/usa.svg';
 // @ts-ignore
 import VietnamFlag from '../svgs/vietnam.svg';
 import quotesData from '../quotes/quotes.json';
-import { PlayerSlot } from '../player/PlayerSlot';
+import { YouTubeAnchor } from '../player/YouTubeOverlay';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -262,9 +262,7 @@ export function FullMode({
 
               {/* YouTube iframe - Much larger */}
               <div className="flex-1 min-h-[300px] rounded-lg overflow-hidden bg-gray-700 p-2">
-                <div className="w-full h-full">
-                  <PlayerSlot className="w-full h-full rounded-md" />
-                </div>
+                <YouTubeAnchor className="w-full h-full rounded-md" />
               </div>
             </div>
 
