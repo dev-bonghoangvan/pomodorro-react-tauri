@@ -98,9 +98,12 @@ export function TallMode({
 
   return (
     <div className="relative w-full h-full" ref={settingsRef}>
+   
       {/* Main TallMode Interface */}
       <Card className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-gray-600 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800">
         <CardContent className="p-6 h-full flex flex-col">
+          {/* Header with Title */}
+          <h1 className="text-xl font-bold text-white">Tall Mode</h1>
           {/* Header with utility icons */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">

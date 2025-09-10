@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Minus, MoreVertical, Pause, Play, Plus, SkipForward, Volume2, VolumeX, X
+  Minus, MoreVertical, Pause, Play, Plus, SkipForward, Volume2, VolumeX, X
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -11,8 +11,7 @@ interface CompactModeProps {
   isRunning: boolean;
   activeTab: string;
   customTimes: { focus: number; shortBreak: number; longBreak: number };
-  currentQuote: string;
-  isVietnamese: boolean;
+  currentQuote: { en: string; vi: string }; // now receive both languages
   onStart: () => void;
   onPause: () => void;
   onNext: () => void;
@@ -25,6 +24,8 @@ interface CompactModeProps {
   onWorkTimeChange: (value: number) => void;
   onShortBreakTimeChange: (value: number) => void;
   onLongBreakTimeChange: (value: number) => void;
+  onYouTubeUrlChange?: (url: string) => void;
+  onAnimationComplete?: () => void; // trigger next random quote after both lines done
 }
 
 export function CompactMode({
@@ -33,7 +34,6 @@ export function CompactMode({
   activeTab,
   customTimes,
   currentQuote,
-  isVietnamese,
   onStart,
   onPause,
   onNext,
@@ -46,55 +46,141 @@ export function CompactMode({
   onWorkTimeChange,
   onShortBreakTimeChange,
   onLongBreakTimeChange,
+  onYouTubeUrlChange,
+  onAnimationComplete,
 }: CompactModeProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
-  const settingsRef = useRef<HTMLDivElement>(null);
+  const [showQuotes, setShowQuotes] = useState(true);
+  const [tempYoutube, setTempYoutube] = useState(youtubeUrl);
+  const settingsRef = useRef<HTMLDivElement>(null); // root container
+  const panelRef = useRef<HTMLDivElement>(null);     // settings panel element
+  const toggleBtnRef = useRef<HTMLButtonElement>(null); // settings toggle button
+  // Quote animation refs & state (similar to MiniMode but simplified)
+  const quoteContainerRef = useRef<HTMLDivElement>(null);
+  const [animationDuration, setAnimationDuration] = useState(15);
+  const [animationTarget, setAnimationTarget] = useState("-120%");
+  const [animationKey, setAnimationKey] = useState(0);
+  const [enDone, setEnDone] = useState(false);
+  const [viDone, setViDone] = useState(false);
+  const [cycleDone, setCycleDone] = useState(false);
 
-  // Close settings when clicking outside
+  // Close settings when clicking outside the panel (but allow clicks on toggle button)
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    if (!showSettings) return;
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
       if (
-        settingsRef.current &&
-        !settingsRef.current.contains(event.target as Node)
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        toggleBtnRef.current &&
+        !toggleBtnRef.current.contains(target)
       ) {
         setShowSettings(false);
       }
-    }
-
-    if (showSettings) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
     };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [showSettings]);
 
   const modeLabel =
     activeTab === "focus"
       ? "Focus"
       : activeTab === "shortBreak"
-      ? "S_Break"
-      : "L_Break";
+        ? "Short Break"
+        : "Long Break";
+
+  // Recalculate scroll animation when quote changes
+  useEffect(() => {
+    if (!showQuotes) return; // skip calc if hidden
+    const calc = () => {
+      if (!quoteContainerRef.current) return;
+      const containerRect = quoteContainerRef.current.getBoundingClientRect();
+
+      // temp element to measure widths
+      const temp = document.createElement('div');
+      temp.style.position = 'absolute';
+      temp.style.visibility = 'hidden';
+      temp.style.whiteSpace = 'nowrap';
+      temp.style.fontSize = '12px'; // text-xs
+      temp.style.fontWeight = '500';
+      temp.style.fontStyle = 'italic';
+      document.body.appendChild(temp);
+      temp.textContent = `"${currentQuote.en}"`;
+      const enWidth = temp.offsetWidth;
+      temp.textContent = `"${currentQuote.vi}"`;
+      const viWidth = temp.offsetWidth;
+      document.body.removeChild(temp);
+
+      const maxWidth = Math.max(enWidth, viWidth);
+      const containerWidth = containerRect.width;
+      const distance = containerWidth + maxWidth; // travel distance
+      const speed = 30; // px/s
+      const duration = Math.max(5, Math.min(40, distance / speed));
+      setAnimationDuration(duration);
+      const targetPct = (maxWidth / containerWidth * 100) + 100;
+      setAnimationTarget(`-${targetPct}%`);
+      setAnimationKey(k => k + 1);
+      setEnDone(false); setViDone(false); setCycleDone(false);
+    };
+    // slight delay to ensure DOM ready
+    const id = setTimeout(calc, 80);
+    const handleResize = () => setTimeout(calc, 120);
+    window.addEventListener('resize', handleResize);
+    return () => { clearTimeout(id); window.removeEventListener('resize', handleResize); };
+  }, [currentQuote, showQuotes]);
+
+  // When both lines finished, trigger callback
+  useEffect(() => {
+    if (enDone && viDone && !cycleDone) {
+      setCycleDone(true);
+      setTimeout(() => {
+        onAnimationComplete?.();
+      }, 120);
+    }
+  }, [enDone, viDone, cycleDone, onAnimationComplete]);
 
   return (
     <div className="relative h-full" ref={settingsRef}>
       {/* Main CompactMode Interface */}
-      <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-4">
-        {/* Header with Timer and Controls */}
+      <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800  shadow-2xl border border-gray-600 p-4">
+        {/* Header: Title + Settings button (moved) */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-mono font-bold text-white">
-              {formatTime(timeLeft)}
-            </span>
-            <span className="text-sm text-gray-300 font-medium">
-              ({modeLabel})
-            </span>
-          </div>
+          <h1 className="text-xl font-bold text-white select-none">Compact Mode</h1>
+          <Button
+            ref={toggleBtnRef}
+            onClick={() => setShowSettings(s => !s)}
+            aria-expanded={showSettings}
+            aria-label="Toggle settings"
+            size="sm"
+            className={`h-8 w-8 rounded-full shadow-lg flex items-center justify-center p-0 transition-colors ${showSettings ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </div>
 
+        {/* YouTube Frame */}
+        <div className="w-full overflow-hidden  border border-gray-600 mb-4">
+          <div className="aspect-video w-full">
+            <iframe
+              src={getYouTubeEmbedUrl(youtubeUrl)}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              referrerPolicy="no-referrer"
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+              allowFullScreen
+            />
+          </div>
+        </div>
+
+        {/* Timer & Controls now moved below video */}
+        <div className="flex items-center justify-between mt-4 mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-mono font-bold text-white">{formatTime(timeLeft)}</span>
+            <span className="text-sm text-gray-300 font-medium">({modeLabel})</span>
+          </div>
           <div className="flex items-center gap-2">
             <AnimatePresence mode="wait">
               {!isRunning ? (
@@ -137,73 +223,61 @@ export function CompactMode({
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Settings Button */}
-            <Button
-              onClick={() => setShowSettings(!showSettings)}
-              size="sm"
-              className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
-        {/* YouTube Frame */}
-        <div className="w-full overflow-hidden  border border-gray-600 mb-4">
-          <div className="aspect-video w-full">
-            <iframe
-              src={getYouTubeEmbedUrl(youtubeUrl)}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-              allowFullScreen
-            />
-          </div>
-        </div>
-
-        {/* Quotes Display */}
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="text-center space-y-2">
-            <AnimatePresence mode="wait">
+        {/* Quotes Display (animated like MiniMode) */}
+        {showQuotes && (
+          <div ref={quoteContainerRef} className="flex-1 flex flex-col justify-center gap-1 overflow-hidden">
+            <div className="overflow-hidden">
               <motion.div
-                key={`${currentQuote}-${isVietnamese}`}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-1"
+                key={`en-${animationKey}-${currentQuote.en}`}
+                className="whitespace-nowrap text-sm text-blue-400 font-medium italic"
+                initial={{ x: '100%' }}
+                animate={{ x: animationTarget }}
+                transition={{ duration: animationDuration, ease: 'linear' }}
+                onAnimationComplete={() => { if (!enDone) setEnDone(true); }}
               >
-                <p className="text-sm text-emerald-400 font-medium italic">
-                  "{currentQuote}"
-                </p>
-                <p className="text-sm text-blue-400 font-medium italic">
-                  "{currentQuote}"
-                </p>
+                "{currentQuote.en}"
               </motion.div>
-            </AnimatePresence>
+            </div>
+            <div className="overflow-hidden">
+              <motion.div
+                key={`vi-${animationKey}-${currentQuote.vi}`}
+                className="whitespace-nowrap text-sm text-emerald-400 font-medium italic"
+                initial={{ x: '100%' }}
+                animate={{ x: animationTarget }}
+                transition={{ duration: animationDuration, ease: 'linear' }}
+                onAnimationComplete={() => { if (!viDone) setViDone(true); }}
+              >
+                "{currentQuote.vi}"
+              </motion.div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Settings Panel Dropdown */}
+  {/* Settings Panel Overlay */}
       <AnimatePresence>
         {showSettings && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-50"
+            ref={panelRef}
+    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+    transition={{ duration: 0.18, ease: 'easeOut' }}
+    className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-50"
             onClick={(e) => e.stopPropagation()}
+    role="dialog"
+    aria-label="Compact settings"
           >
             {/* Settings Header */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-600">
               <h2 className="text-lg font-bold text-white">Settings</h2>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-6 h-6 rounded-full bg-gray-600 hover:bg-gray-500 flex items-center justify-center text-white"
+        className="w-7 h-7 rounded-full bg-gray-600/90 hover:bg-gray-500 flex items-center justify-center text-white transition-colors"
+        aria-label="Close settings"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -224,7 +298,8 @@ export function CompactMode({
                       onClick={() =>
                         setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))
                       }
-                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease rounds"
                     >
                       <Minus className="h-3 w-3 text-white" />
                     </button>
@@ -233,7 +308,8 @@ export function CompactMode({
                     </span>
                     <button
                       onClick={() => setRoundsPerCycle(roundsPerCycle + 1)}
-                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase rounds"
                     >
                       <Plus className="h-3 w-3 text-white" />
                     </button>
@@ -255,7 +331,8 @@ export function CompactMode({
                       onClick={() =>
                         onWorkTimeChange(Math.max(1, customTimes.focus - 1))
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease focus time"
                     >
                       -1m
                     </button>
@@ -264,7 +341,8 @@ export function CompactMode({
                     </span>
                     <button
                       onClick={() => onWorkTimeChange(customTimes.focus + 1)}
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase focus time"
                     >
                       +1m
                     </button>
@@ -279,7 +357,8 @@ export function CompactMode({
                           Math.max(1, customTimes.shortBreak - 1)
                         )
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease short break"
                     >
                       -1m
                     </button>
@@ -290,7 +369,8 @@ export function CompactMode({
                       onClick={() =>
                         onShortBreakTimeChange(customTimes.shortBreak + 1)
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase short break"
                     >
                       +1m
                     </button>
@@ -305,7 +385,8 @@ export function CompactMode({
                           Math.max(1, customTimes.longBreak - 1)
                         )
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease long break"
                     >
                       -1m
                     </button>
@@ -316,7 +397,8 @@ export function CompactMode({
                       onClick={() =>
                         onLongBreakTimeChange(customTimes.longBreak + 1)
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase long break"
                     >
                       +1m
                     </button>
@@ -326,7 +408,7 @@ export function CompactMode({
             </div>
 
             {/* Media */}
-            <div>
+    <div>
               <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
                 Media
               </h3>
@@ -334,13 +416,38 @@ export function CompactMode({
                 <span className="text-gray-300 text-sm">Mute YouTube</span>
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+      className={`w-9 h-9 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center transition-colors ${isMuted ? 'ring-2 ring-emerald-500/60' : ''}`}
+      aria-pressed={isMuted}
+      aria-label="Toggle mute"
                 >
                   {isMuted ? (
                     <VolumeX className="h-4 w-4 text-white" />
                   ) : (
                     <Volume2 className="h-4 w-4 text-white" />
                   )}
+                </button>
+              </div>
+              {/* YouTube URL input */}
+              <div className="mt-4 space-y-2">
+                <label className="text-gray-300 text-xs font-semibold uppercase tracking-wide">YouTube URL</label>
+                <input
+                  value={tempYoutube}
+                  onChange={e => setTempYoutube(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && onYouTubeUrlChange) { onYouTubeUrlChange(tempYoutube.trim()); } }}
+                  onBlur={() => { if (onYouTubeUrlChange) onYouTubeUrlChange(tempYoutube.trim()); }}
+                  placeholder="Paste YouTube link..."
+                  className="w-full px-3 py-2 rounded-md bg-gray-700/70 border border-gray-600 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/60"
+                />
+              </div>
+              {/* Quotes toggle */}
+              <div className="mt-6 flex items-center justify-between">
+                <span className="text-gray-300 text-sm">Show Quotes</span>
+                <button
+                  onClick={() => setShowQuotes(q => !q)}
+                  className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${showQuotes ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
+                  aria-pressed={showQuotes}
+                >
+                  {showQuotes ? 'ON' : 'OFF'}
                 </button>
               </div>
             </div>

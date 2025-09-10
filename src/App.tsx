@@ -290,7 +290,7 @@ export default function App() {
           </motion.div>
         )}
 
-        {mode === "compact" && (
+    {mode === "compact" && (
           <motion.div
             key="compact"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -304,8 +304,7 @@ export default function App() {
               isRunning={isRunning}
               activeTab={activeTab}
               customTimes={customTimes}
-              currentQuote={getCurrentQuote()}
-              isVietnamese={isVietnamese}
+      currentQuote={getCurrentQuoteObject()}
               onStart={handleStart}
               onPause={handlePause}
               onNext={handleNext}
@@ -324,6 +323,8 @@ export default function App() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              onYouTubeUrlChange={setYoutubeUrl}
+      onAnimationComplete={handleQuoteAnimationComplete}
             />
           </motion.div>
         )}
@@ -335,7 +336,7 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="h-screen p-4"
+            className="h-screen "
           >
             <TallMode
               timeLeft={timeLeft}
@@ -378,7 +379,7 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="h-screen p-4"
+            className="h-screen "
           >
             <FullMode
               timeLeft={timeLeft}

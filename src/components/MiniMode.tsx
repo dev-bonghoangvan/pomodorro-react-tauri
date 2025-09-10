@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
 import { Button } from '../ui/button';
-import { toggleExpand, COLLAPSED_W, EXPANDED_W } from '../ui/toggleExpand';
+import { toggleExpand } from '../ui/toggleExpand';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import SettingsPanel from './SettingsPanel';
 
@@ -193,20 +193,8 @@ export function MiniMode({
     };
   }, []);
 
-  // Sync showSettings with actual window width (in case user resizes manually)
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const win = getCurrentWindow();
-        const size = await win.outerSize();
-        if (!cancelled) {
-          setShowSettings(size.width > COLLAPSED_W + 2);
-        }
-      } catch {}
-    })();
-    return () => { cancelled = true; };
-  }, []);
+  // NOTE: Removed auto-sync that opened settings when width > collapsed.
+  // Keep settings closed by default; only user interaction (button) toggles it.
 
   const modeLabel =
     activeTab === "focus"

@@ -99,8 +99,9 @@ export function FullMode({
   return (
     <div className="relative h-full flex flex-col" ref={settingsRef}>
       {/* Main FullMode Interface */}
-      <Card className="flex-1 flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-gray-600 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800">
+      <Card className="flex-1 flex flex-col  overflow-hidden shadow-2xl border border-gray-600 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800">
         <CardHeader className="pb-4">
+          <h1 className="text-xl font-bold text-white">Full Mode</h1>
           {/* Header with title and settings */}
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
