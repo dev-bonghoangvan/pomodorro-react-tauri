@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { invoke } from '@tauri-apps/api/core';
+
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
@@ -56,7 +58,33 @@ export function TallMode({
   const [showSettings, setShowSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Handle hover with delay (like CompactMode)
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 2000); // 2 seconds delay
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Close settings when clicking outside
   useEffect(() => {
@@ -97,15 +125,55 @@ export function TallMode({
   };
 
   return (
-    <div className="relative w-full h-full" ref={settingsRef}>
+    <div 
+      className="relative w-full h-full" 
+      ref={settingsRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Hover Header Bar - Fade in/out */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-0 left-0 right-0 h-[30px] z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-600/50"
+            data-tauri-drag-region
+            style={{ pointerEvents: 'auto' }}
+          >
+            <div className="flex items-center justify-between px-4 h-full">
+              <div className="flex items-center gap-2" data-tauri-drag-region>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
+              </div>
+              <div className="flex-1 h-full" data-tauri-drag-region></div>
+              <button
+                onClick={async () => {
+                  try {
+                    await invoke('close_window');
+                  } catch (error) {
+                    console.error('Error closing window:', error);
+                  }
+                }}
+                className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
+                aria-label="Close window"
+                data-tauri-drag-region="false"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
    
       {/* Main TallMode Interface */}
       <Card className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-gray-600 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800">
-        <CardContent className="p-6 h-full flex flex-col">
-          {/* Header with Title */}
-          <h1 className="text-xl font-bold text-white">Tall Mode</h1>
+        <CardContent className="p-4 pt-10 h-full flex flex-col space-y-4">
           {/* Header with utility icons */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <span className="text-lg font-semibold text-white">Pomodoro</span>
             </div>
@@ -129,158 +197,188 @@ export function TallMode({
             </div>
           </div>
 
-          {/* Timer - Top Section */}
-          <div className="flex-1 flex flex-col items-center justify-center mb-6">
-            <div className="relative mb-6">
-              {/* Progress Circle */}
-              <svg
-                className="w-40 h-40 transform -rotate-90"
-                viewBox="0 0 100 100"
-              >
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="6"
-                  fill="none"
-                />
-                <motion.circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  stroke="url(#gradient)"
-                  strokeWidth="6"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={`${2 * Math.PI * 45}`}
-                  strokeDashoffset={`${
-                    2 * Math.PI * 45 * (1 - getProgress() / 100)
-                  }`}
-                  initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-                  animate={{
-                    strokeDashoffset:
-                      2 * Math.PI * 45 * (1 - getProgress() / 100),
-                  }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                />
-                <defs>
-                  <linearGradient
-                    id="gradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#059669" />
-                  </linearGradient>
-                </defs>
-              </svg>
+          {/* YouTube Section - Always at top */}
+          <motion.div
+            className="w-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-700">
+              <iframe
+                src={getYouTubeEmbedUrl(youtubeUrl)}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                referrerPolicy="no-referrer"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                allowFullScreen
+              />
+            </div>
+          </motion.div>
 
-              {/* Time Display */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  key={timeLeft}
-                  initial={{ scale: 1.1, opacity: 0.8 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-3xl font-mono font-bold text-white"
+          {/* Main Content - Responsive Layout */}
+          <div className="flex-1 flex flex-col xl:flex-row gap-4">
+            {/* Left Side - Timer and Controls */}
+            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+              {/* Tabs */}
+              <Tabs value={currentTab} onValueChange={onTabChange} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-gray-700/50 border border-gray-600">
+                  <TabsTrigger
+                    value="focus"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      <span className="text-xs font-medium">Focus</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="shortBreak"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span className="text-xs font-medium">Short</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="longBreak"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <span className="text-xs font-medium">Long</span>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Timer Display */}
+              <div className="relative w-32 h-32">
+                <svg
+                  className="w-full h-full transform -rotate-90"
+                  viewBox="0 0 100 100"
                 >
-                  {formatTime(timeLeft)}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <motion.circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="url(#gradient)"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 40}`}
+                    strokeDashoffset={`${
+                      2 * Math.PI * 40 * (1 - getProgress() / 100)
+                    }`}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
+                    animate={{
+                      strokeDashoffset:
+                        2 * Math.PI * 40 * (1 - getProgress() / 100),
+                    }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  />
+                  <defs>
+                    <linearGradient
+                      id="gradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                {/* Time Display */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    key={timeLeft}
+                    initial={{ scale: 1.1, opacity: 0.8 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-2xl font-mono font-bold text-white"
+                  >
+                    {formatTime(timeLeft)}
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex justify-center gap-3">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={onPlayPause}
+                    className="h-12 w-12 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg"
+                  >
+                    {isRunning ? (
+                      <Pause className="h-5 w-5" />
+                    ) : (
+                      <Play className="h-5 w-5 ml-1" />
+                    )}
+                  </Button>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={onSkip}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg"
+                  >
+                    <SkipForward className="h-5 w-5" />
+                  </Button>
+                </motion.div>
+
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={onReset}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg"
+                  >
+                    <RotateCcw className="h-5 w-5" />
+                  </Button>
                 </motion.div>
               </div>
             </div>
-          </div>
 
-          {/* Tabs */}
-          <Tabs value={currentTab} onValueChange={onTabChange} className="mb-6">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-700/50 border border-gray-600">
-              <TabsTrigger
-                value="focus"
-                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  <span className="text-xs font-medium">Focus</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger
-                value="shortBreak"
-                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-xs font-medium">Short</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger
-                value="longBreak"
-                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <span className="text-xs font-medium">Long</span>
-                </div>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Controls */}
-          <div className="flex justify-center gap-4 mb-6">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={onPlayPause}
-                className="h-14 w-14 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg"
-              >
-                {isRunning ? (
-                  <Pause className="h-6 w-6" />
-                ) : (
-                  <Play className="h-6 w-6 ml-1" />
-                )}
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={onSkip}
-                variant="ghost"
-                className="h-14 w-14 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg"
-              >
-                <SkipForward className="h-6 w-6" />
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={onReset}
-                variant="ghost"
-                className="h-14 w-14 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg"
-              >
-                <RotateCcw className="h-6 w-6" />
-              </Button>
-            </motion.div>
-          </div>
-
-          {/* Quotes Display */}
-          <div className="text-center space-y-4">
-            <AnimatePresence mode="wait">
+            {/* Right Side - Quotes */}
+            <div className="flex-1 flex items-center justify-center">
               <motion.div
-                key={currentQuote}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-2"
+                className="text-center w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
               >
-                <p className="text-sm text-emerald-400 font-medium italic">
-                  "{currentQuote}"
-                </p>
-                <p className="text-sm text-blue-400 font-medium italic">
-                  "{currentQuote}"
-                </p>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentQuote}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-3"
+                  >
+                    <p className="text-sm text-emerald-400 font-medium italic leading-relaxed">
+                      "{currentQuote}"
+                    </p>
+                    <p className="text-sm text-blue-400 font-medium italic leading-relaxed">
+                      "{currentQuote}"
+                    </p>
+                    <div className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+                  </motion.div>
+                </AnimatePresence>
               </motion.div>
-            </AnimatePresence>
+            </div>
           </div>
         </CardContent>
       </Card>

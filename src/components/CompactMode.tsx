@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../ui/button';
 
 interface CompactModeProps {
@@ -55,6 +56,8 @@ export function CompactMode({
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
   const [tempYoutube, setTempYoutube] = useState(youtubeUrl);
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null); // root container
   const panelRef = useRef<HTMLDivElement>(null);     // settings panel element
   const toggleBtnRef = useRef<HTMLButtonElement>(null); // settings toggle button
@@ -66,6 +69,30 @@ export function CompactMode({
   const [enDone, setEnDone] = useState(false);
   const [viDone, setViDone] = useState(false);
   const [cycleDone, setCycleDone] = useState(false);
+
+  // Handle hover with delay (like MiniMode)
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 2000); // 2 seconds delay
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Close settings when clicking outside the panel (but allow clicks on toggle button)
   useEffect(() => {
@@ -143,10 +170,53 @@ export function CompactMode({
   }, [enDone, viDone, cycleDone, onAnimationComplete]);
 
   return (
-    <div className="relative h-full" ref={settingsRef}>
+    <div 
+      className="relative h-full" 
+      ref={settingsRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Hover Header Bar - Fade in/out */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-0 left-0 right-0 h-[30px] z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-600/50"
+            data-tauri-drag-region
+            style={{ pointerEvents: 'auto' }}
+          >
+            <div className="flex items-center justify-between px-4 h-full">
+              <div className="flex items-center gap-2" data-tauri-drag-region>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
+              </div>
+              <div className="flex-1 h-full" data-tauri-drag-region></div>
+              <button
+                onClick={async () => {
+                  try {
+                    await invoke('close_window');
+                  } catch (error) {
+                    console.error('Error closing window:', error);
+                  }
+                }}
+                className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
+                aria-label="Close window"
+                data-tauri-drag-region="false"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Main CompactMode Interface */}
-      <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800  shadow-2xl border border-gray-600 p-4">
-        {/* Header: Title + Settings button (moved) */}
+      <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 shadow-2xl border border-gray-600 p-4 pt-10" style={{ pointerEvents: 'auto' }}>
+        {/* Header: Title + Settings button */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-white select-none">Compact Mode</h1>
           <Button
@@ -155,9 +225,9 @@ export function CompactMode({
             aria-expanded={showSettings}
             aria-label="Toggle settings"
             size="sm"
-            className={`h-8 w-8 rounded-full shadow-lg flex items-center justify-center p-0 transition-colors ${showSettings ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}
+            className={`h-8 w-8 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${showSettings ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className={`h-4 w-4 transition-transform duration-200 ${showSettings ? 'rotate-90' : 'rotate-0'}`} />
           </Button>
         </div>
 

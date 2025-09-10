@@ -240,16 +240,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background overflow-hidden relative">
-      {/* Global Drag Area (frameless window drag handle) for non-mini modes */}
-      {mode !== "mini" && (
-        <div
-          className="absolute top-0 left-0 right-0 h-5 bg-gradient-to-r from-blue-500/5 to-purple-500/5 cursor-move z-50 flex items-center justify-center rounded-t-2xl"
-          data-tauri-drag-region
-          aria-hidden
-        >
-          <div className="w-6 h-0.5 bg-gray-400/60 rounded-full" />
-        </div>
-      )}
 
       {/* Render different modes based on window size */}
       <AnimatePresence mode="wait">
@@ -386,7 +376,6 @@ export default function App() {
               isRunning={isRunning}
               activeTab={activeTab}
               customTimes={customTimes}
-              currentQuote={getCurrentQuote()}
               isVietnamese={isVietnamese}
               isYouTubeExpanded={isYouTubeExpanded}
               youtubeUrl={youtubeUrl}
