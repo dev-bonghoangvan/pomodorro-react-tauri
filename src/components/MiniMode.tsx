@@ -194,6 +194,7 @@ export function MiniMode({
     };
   }, []);
 
+
   // NOTE: Removed auto-sync that opened settings when width > collapsed.
   // Keep settings closed by default; only user interaction (button) toggles it.
 
@@ -263,7 +264,9 @@ export function MiniMode({
            }`}>
              {/* YouTube Thumbnail */}
              <div ref={thumbnailRef} className="w-8 h-8 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0">
-               <PlayerSlot className="w-full h-full" />
+               <div className="w-full h-full">
+                 <PlayerSlot className="w-full h-full" />
+               </div>
              </div>
 
              {/* Timer and Quotes Display */}

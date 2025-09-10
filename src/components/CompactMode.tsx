@@ -95,6 +95,7 @@ export function CompactMode({
     };
   }, []);
 
+
   // Close settings when clicking outside the panel (but allow clicks on toggle button)
   useEffect(() => {
     if (!showSettings) return;
@@ -233,8 +234,8 @@ export function CompactMode({
         </div>
 
         {/* YouTube Frame */}
-        <div className="w-full overflow-hidden  border border-gray-600 mb-4">
-          <div className="aspect-video w-full">
+        <div className="w-full overflow-hidden border border-gray-600 mb-4">
+          <div className="aspect-video w-full h-full">
             <PlayerSlot className="w-full h-full" />
           </div>
         </div>

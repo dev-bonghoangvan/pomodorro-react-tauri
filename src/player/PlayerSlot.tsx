@@ -11,7 +11,15 @@ export function PlayerSlot({ className, style }: PlayerSlotProps) {
   const { portalNode } = useYouTube()
 
   return (
-    <div className={className} style={style}>
+    <div 
+      className={className} 
+      style={{ 
+        ...style, 
+        position: 'relative',
+        width: '100%',
+        height: '100%'
+      }}
+    >
       <OutPortal node={portalNode} />
     </div>
   )

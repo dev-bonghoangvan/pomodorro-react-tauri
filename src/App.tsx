@@ -16,6 +16,7 @@ import { YouTubeProvider, useYouTube } from './player/YouTubeProvider';
 import USAFlag from './svgs/usa.svg';
 // @ts-ignore
 import VietnamFlag from './svgs/vietnam.svg';
+import { PlayerOverlayProvider } from './player/PlayerOverlay';
 
 function useInterval(callback: () => void, delay: number | null) {
   const saved = useRef(callback);
@@ -260,9 +261,9 @@ function AppContent() {
         {mode === "mini" && (
           <motion.div
             key="mini"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="h-screen"
           >
@@ -297,9 +298,9 @@ function AppContent() {
     {mode === "compact" && (
           <motion.div
             key="compact"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="h-screen"
           >
@@ -336,9 +337,9 @@ function AppContent() {
         {mode === "tall" && (
           <motion.div
             key="tall"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="h-screen "
           >
@@ -379,9 +380,9 @@ function AppContent() {
         {mode === "full" && (
           <motion.div
             key="full"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="h-screen "
           >

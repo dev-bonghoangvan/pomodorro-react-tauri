@@ -132,6 +132,7 @@ export function FullMode({
     };
   }, []);
 
+
   // Close settings when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -261,7 +262,9 @@ export function FullMode({
 
               {/* YouTube iframe - Much larger */}
               <div className="flex-1 min-h-[300px] rounded-lg overflow-hidden bg-gray-700 p-2">
-                <PlayerSlot className="w-full h-full rounded-md" />
+                <div className="w-full h-full">
+                  <PlayerSlot className="w-full h-full rounded-md" />
+                </div>
               </div>
             </div>
 

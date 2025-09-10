@@ -87,6 +87,7 @@ export function TallMode({
     };
   }, []);
 
+
   // Close settings when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -206,7 +207,9 @@ export function TallMode({
             transition={{ duration: 0.5 }}
           >
             <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-700">
-              <PlayerSlot className="w-full h-full" />
+              <div className="w-full h-full">
+                <PlayerSlot className="w-full h-full" />
+              </div>
             </div>
           </motion.div>
 
