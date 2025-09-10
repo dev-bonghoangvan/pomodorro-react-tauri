@@ -11,6 +11,7 @@ import { Button } from '../ui/button';
 import { toggleExpand } from '../ui/toggleExpand';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import SettingsPanel from './SettingsPanel';
+import { PlayerSlot } from '../player/PlayerSlot';
 
 interface MiniModeProps {
   timeLeft: number;
@@ -262,15 +263,7 @@ export function MiniMode({
            }`}>
              {/* YouTube Thumbnail */}
              <div ref={thumbnailRef} className="w-8 h-8 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0">
-               <iframe
-                 src={getYouTubeEmbedUrl(youtubeUrl)}
-                 className="w-full h-full"
-                 title="Mini YouTube"
-                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                 referrerPolicy="no-referrer"
-                 sandbox="allow-scripts allow-same-origin allow-presentation"
-                 allowFullScreen
-               />
+               <PlayerSlot className="w-full h-full" />
              </div>
 
              {/* Timer and Quotes Display */}
@@ -326,7 +319,7 @@ export function MiniMode({
            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 ${showSettings ? 'right-60' : 'right-2'}`}>
             {/* Control Buttons */}
             <div className="flex items-center gap-2">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="sync" initial={false}>
                 {!isRunning ? (
                   <motion.div
                     key="start"

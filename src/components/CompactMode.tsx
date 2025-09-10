@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../ui/button';
+import { PlayerSlot } from '../player/PlayerSlot';
 
 interface CompactModeProps {
   timeLeft: number;
@@ -177,7 +178,7 @@ export function CompactMode({
       onMouseLeave={handleMouseLeave}
     >
       {/* Hover Header Bar - Fade in/out */}
-      <AnimatePresence>
+      <AnimatePresence mode="sync" initial={false}>
         {isHovered && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -234,14 +235,7 @@ export function CompactMode({
         {/* YouTube Frame */}
         <div className="w-full overflow-hidden  border border-gray-600 mb-4">
           <div className="aspect-video w-full">
-            <iframe
-              src={getYouTubeEmbedUrl(youtubeUrl)}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-              allowFullScreen
-            />
+            <PlayerSlot className="w-full h-full" />
           </div>
         </div>
 
@@ -252,7 +246,7 @@ export function CompactMode({
             <span className="text-sm text-gray-300 font-medium">({modeLabel})</span>
           </div>
           <div className="flex items-center gap-2">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="sync" initial={false}>
               {!isRunning ? (
                 <motion.div
                   key="start"
@@ -328,7 +322,7 @@ export function CompactMode({
       </div>
 
   {/* Settings Panel Overlay */}
-      <AnimatePresence>
+      <AnimatePresence mode="sync" initial={false}>
         {showSettings && (
           <motion.div
             ref={panelRef}

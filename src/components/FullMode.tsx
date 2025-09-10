@@ -11,6 +11,7 @@ import USAFlag from '../svgs/usa.svg';
 // @ts-ignore
 import VietnamFlag from '../svgs/vietnam.svg';
 import quotesData from '../quotes/quotes.json';
+import { PlayerSlot } from '../player/PlayerSlot';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -158,7 +159,7 @@ export function FullMode({
       onMouseLeave={handleMouseLeave}
     >
       {/* Hover Header Bar - Fade in/out */}
-      <AnimatePresence>
+      <AnimatePresence mode="sync" initial={false}>
         {isHovered && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -260,14 +261,7 @@ export function FullMode({
 
               {/* YouTube iframe - Much larger */}
               <div className="flex-1 min-h-[300px] rounded-lg overflow-hidden bg-gray-700 p-2">
-                <iframe
-                  src={getYouTubeEmbedUrl(youtubeUrl)}
-                  className="w-full h-full rounded-md"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  referrerPolicy="no-referrer"
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
-                  allowFullScreen
-                />
+                <PlayerSlot className="w-full h-full rounded-md" />
               </div>
             </div>
 
@@ -365,7 +359,7 @@ export function FullMode({
 
               {/* Time Settings */}
               <div className="flex items-center justify-center gap-2">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync" initial={false}>
                   {editingTime === activeTab ? (
                     <motion.div
                       className="flex items-center gap-2"
@@ -406,7 +400,7 @@ export function FullMode({
 
               {/* Control Buttons */}
               <div className="flex justify-center gap-4">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync" initial={false}>
                   {!isRunning ? (
                     <motion.div
                       key="start"
@@ -458,7 +452,7 @@ export function FullMode({
 
               {/* Quotes */}
               <div className="text-center w-full">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync" initial={false}>
                   <motion.div
                     key={`${getCurrentQuote().en}-${getCurrentQuote().vi}-${animationKey}`}
                     initial={{ opacity: 0, y: 20 }}
@@ -501,7 +495,7 @@ export function FullMode({
       </Card>
 
       {/* Settings Panel Dropdown */}
-      <AnimatePresence>
+      <AnimatePresence mode="sync" initial={false}>
         {showSettings && (
           <motion.div
             ref={settingsRef}

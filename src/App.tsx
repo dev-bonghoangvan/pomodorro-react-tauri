@@ -11,6 +11,7 @@ import { MiniMode } from './components/MiniMode';
 import { TallMode } from './components/TallMode';
 import { useWindowSize } from './hooks/useWindowSize';
 import quotesData from './quotes/quotes.json';
+import { YouTubeProvider, useYouTube } from './player/YouTubeProvider';
 // @ts-ignore
 import USAFlag from './svgs/usa.svg';
 // @ts-ignore
@@ -28,7 +29,7 @@ function useInterval(callback: () => void, delay: number | null) {
   }, [delay]);
 }
 
-export default function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState("focus");
   const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
   const [isRunning, setIsRunning] = useState(false);
@@ -47,6 +48,7 @@ export default function App() {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVietnamese, setIsVietnamese] = useState(false); // Default to English
   const intervalRef = useRef<number | null>(null);
+  const { setVideoId } = useYouTube();
 
   // Get window size and display mode
   const { width, height, mode } = useWindowSize();
@@ -209,6 +211,18 @@ export default function App() {
     }
   };
 
+  // Update video ID when YouTube URL changes
+  useEffect(() => {
+    const videoId = youtubeUrl.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
+    );
+    if (videoId) {
+      console.log('App: Setting video ID to', videoId[1])
+      setVideoId(videoId[1]);
+    }
+  }, [youtubeUrl, setVideoId]);
+
+
   const getProgress = () => {
     const totalTime = customTimes[activeTab as keyof typeof customTimes] * 60;
     const progress = ((totalTime - timeLeft) / totalTime) * 100;
@@ -242,7 +256,7 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background overflow-hidden relative">
 
       {/* Render different modes based on window size */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync" initial={false}>
         {mode === "mini" && (
           <motion.div
             key="mini"
@@ -401,5 +415,13 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <YouTubeProvider>
+      <AppContent />
+    </YouTubeProvider>
   );
 }

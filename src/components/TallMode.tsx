@@ -9,6 +9,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import { PlayerSlot } from '../player/PlayerSlot';
 
 interface TallModeProps {
   timeLeft: number;
@@ -132,7 +133,7 @@ export function TallMode({
       onMouseLeave={handleMouseLeave}
     >
       {/* Hover Header Bar - Fade in/out */}
-      <AnimatePresence>
+      <AnimatePresence mode="sync" initial={false}>
         {isHovered && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -175,7 +176,7 @@ export function TallMode({
           {/* Header with utility icons */}
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold text-white">Pomodoro</span>
+              <span className="text-lg font-semibold text-white">Pomodoro (tall mode)</span>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -205,14 +206,7 @@ export function TallMode({
             transition={{ duration: 0.5 }}
           >
             <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-700">
-              <iframe
-                src={getYouTubeEmbedUrl(youtubeUrl)}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                referrerPolicy="no-referrer"
-                sandbox="allow-scripts allow-same-origin allow-presentation"
-                allowFullScreen
-              />
+              <PlayerSlot className="w-full h-full" />
             </div>
           </motion.div>
 
@@ -359,7 +353,7 @@ export function TallMode({
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync" initial={false}>
                   <motion.div
                     key={currentQuote}
                     initial={{ opacity: 0, y: 10 }}
@@ -384,7 +378,7 @@ export function TallMode({
       </Card>
 
       {/* Settings Panel Dropdown */}
-      <AnimatePresence>
+      <AnimatePresence mode="sync" initial={false}>
         {showSettings && (
           <motion.div
             initial={{ opacity: 0, y: -10, scale: 0.95 }}
