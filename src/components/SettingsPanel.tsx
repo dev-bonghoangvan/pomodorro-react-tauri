@@ -19,6 +19,8 @@ export interface SettingsPanelProps {
   youtubeUrl: string;
   onYouTubeUrlChange?: (url: string) => void;
   className?: string;
+  width?: string; // Custom width for different modes
+  height?: string; // Custom height for different modes
 }
 
 /**
@@ -41,7 +43,9 @@ export function SettingsPanel({
   setIsMuted,
   youtubeUrl,
   onYouTubeUrlChange,
-  className = ''
+  className = '',
+  width = '240px',
+  height = '100%'
 }: SettingsPanelProps) {
   const [youtubeInput, setYoutubeInput] = useState(youtubeUrl);
   useEffect(() => { setYoutubeInput(youtubeUrl); }, [youtubeUrl]);
@@ -54,7 +58,10 @@ export function SettingsPanel({
   };
 
   return (
-    <div className={`absolute inset-y-0 right-0 w-[240px] bg-gray-800 border-l border-gray-600 p-4 flex flex-col overflow-y-auto text-xs ${className}`}>      
+    <div 
+      className={`bg-gray-800 border-l border-gray-600 p-4 flex flex-col overflow-y-auto overflow-x-hidden text-xs ${className}`}
+      style={{ width, height }}
+    >      
       <div className="flex items-center justify-between mb-4 select-none">
         <h2 className="text-sm font-semibold text-white tracking-wide">SETTINGS</h2>
         <button
@@ -67,43 +74,43 @@ export function SettingsPanel({
       <div className="space-y-6">
         {/* Quick Settings */}
         <div>
-          <h3 className="text-gray-300 font-semibold mb-2">Quick Settings</h3>
+          <h3 className="text-gray-300 font-semibold mb-2 text-xs">Quick Settings</h3>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400">Rounds per cycle</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))} className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"><Minus className="h-3 w-3 text-white" /></button>
-              <span className="text-white font-mono w-6 text-center">{roundsPerCycle}</span>
-              <button onClick={() => setRoundsPerCycle(roundsPerCycle + 1)} className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"><Plus className="h-3 w-3 text-white" /></button>
+            <span className="text-gray-400 text-xs">Rounds per cycle</span>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))} className="w-5 h-5 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"><Minus className="h-2.5 w-2.5 text-white" /></button>
+              <span className="text-white font-mono w-5 text-center text-xs">{roundsPerCycle}</span>
+              <button onClick={() => setRoundsPerCycle(roundsPerCycle + 1)} className="w-5 h-5 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"><Plus className="h-2.5 w-2.5 text-white" /></button>
             </div>
           </div>
         </div>
 
         {/* Durations */}
         <div>
-          <h3 className="text-gray-300 font-semibold mb-2">Durations</h3>
+          <h3 className="text-gray-300 font-semibold mb-2 text-xs">Durations</h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Focus</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => onWorkTimeChange(Math.max(1, customTimes.focus - 1))} className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white">-1m</button>
-                <span className="text-white font-mono w-10 text-center">{customTimes.focus}m</span>
-                <button onClick={() => onWorkTimeChange(customTimes.focus + 1)} className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white">+1m</button>
+              <span className="text-gray-400 text-xs">Focus</span>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onWorkTimeChange(Math.max(1, customTimes.focus - 1))} className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs">-1m</button>
+                <span className="text-white font-mono w-8 text-center text-xs">{customTimes.focus}m</span>
+                <button onClick={() => onWorkTimeChange(customTimes.focus + 1)} className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs">+1m</button>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Short</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => onShortBreakTimeChange(Math.max(1, customTimes.shortBreak - 1))} className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white">-1m</button>
-                <span className="text-white font-mono w-10 text-center">{customTimes.shortBreak}m</span>
-                <button onClick={() => onShortBreakTimeChange(customTimes.shortBreak + 1)} className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white">+1m</button>
+              <span className="text-gray-400 text-xs">Short</span>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onShortBreakTimeChange(Math.max(1, customTimes.shortBreak - 1))} className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs">-1m</button>
+                <span className="text-white font-mono w-8 text-center text-xs">{customTimes.shortBreak}m</span>
+                <button onClick={() => onShortBreakTimeChange(customTimes.shortBreak + 1)} className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs">+1m</button>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Long</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => onLongBreakTimeChange(Math.max(1, customTimes.longBreak - 1))} className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white">-1m</button>
-                <span className="text-white font-mono w-10 text-center">{customTimes.longBreak}m</span>
-                <button onClick={() => onLongBreakTimeChange(customTimes.longBreak + 1)} className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white">+1m</button>
+              <span className="text-gray-400 text-xs">Long</span>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onLongBreakTimeChange(Math.max(1, customTimes.longBreak - 1))} className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs">-1m</button>
+                <span className="text-white font-mono w-8 text-center text-xs">{customTimes.longBreak}m</span>
+                <button onClick={() => onLongBreakTimeChange(customTimes.longBreak + 1)} className="px-1.5 py-0.5 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs">+1m</button>
               </div>
             </div>
           </div>

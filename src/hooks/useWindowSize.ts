@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-
-import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-export type DisplayMode = "mini" | "compact" | "tall" | "full" | "small";
+export type DisplayMode = "mini" | "small" | "compact" | "tall" | "full";
 
 export interface WindowSize {
   width: number;
@@ -11,66 +9,91 @@ export interface WindowSize {
   mode: DisplayMode;
 }
 
+type Limits = {
+  minW: number;
+  minH: number;
+  maxW?: number;   // đặt khi muốn khóa chặt range
+  maxH?: number;   // để trống là "không giới hạn"
+};
+
+// Gợi ý ngưỡng (tweak tùy app của bạn)
+const LIMITS: Record<DisplayMode, Limits> = {
+  mini:    { minW: 260, minH: 90,  maxW: 360, maxH: 140 },
+  small:   { minW: 360, minH: 170, maxW: 480, maxH: 260 },
+  compact: { minW: 480, minH: 220 /*, maxW: 720, maxH: 420 */ },
+  tall:    { minW: 360, minH: 420 /* chỉ đặt min, cho phép cao hơn */ },
+  full:    { minW: 640, minH: 420 /* không giới hạn max */ },
+};
+
+// Đệm để chống nhảy mode khi lắc chuột resize
+const HYSTERESIS = 12;
+
+function pickMode(width: number, height: number, prev?: DisplayMode): DisplayMode {
+  const ar = width / Math.max(1, height);
+
+  // Ưu tiên width cho mini/compact, height + AR cho tall
+  if (width <= 340 + (prev === "mini" ? HYSTERESIS : 0) || height <= 100 + (prev === "mini" ? HYSTERESIS : 0)) {
+    return "mini";
+  }
+  if (width <= 480 + (prev === "small" ? HYSTERESIS : 0) && height <= 260 + (prev === "small" ? HYSTERESIS : 0)) {
+    return "small";
+  }
+  if (width <= 720 + (prev === "compact" ? HYSTERESIS : 0) || height <= 400 + (prev === "compact" ? HYSTERESIS : 0)) {
+    return "compact";
+  }
+  if (ar < 1 && height >= 420 - (prev === "tall" ? HYSTERESIS : 0) && width <= 540 + (prev === "tall" ? HYSTERESIS : 0)) {
+    return "tall";
+  }
+  return "full";
+}
+
+async function applyLimits(mode: DisplayMode) {
+  const win = getCurrentWindow();
+  const l = LIMITS[mode];
+
+  // Min size luôn nên đặt
+  await win.setMinSize({ width: l.minW, height: l.minH } as any);
+
+  // Max size: chỉ đặt khi muốn "khóa" chặt (mini/small), còn lại nên bỏ để user kéo thoải mái
+  if (typeof l.maxW === "number" && typeof l.maxH === "number") {
+    await win.setMaxSize({ width: l.maxW, height: l.maxH } as any);
+  } else {
+    await win.setMaxSize(null); // bỏ giới hạn max
+  }
+}
+
 export function useWindowSize(): WindowSize {
-  const [size, setSize] = useState<WindowSize>({
-    width: 300,
-    height: 200,
-    mode: "mini",
-  });
+  const [size, setSize] = useState<WindowSize>({ width: 300, height: 200, mode: "mini" });
 
   useEffect(() => {
-    // Get initial size
-    const getInitialSize = async () => {
-      try {
-        const window = getCurrentWindow();
-        const logicalSize = await window.innerSize();
-        const width = logicalSize.width;
-        const height = logicalSize.height;
-        const mode = determineMode(width, height);
-        setSize({ width, height, mode });
-      } catch (error) {
-        console.error("Error getting initial window size:", error);
-      }
-    };
+    const win = getCurrentWindow();
 
-    getInitialSize();
-
-    // Listen for window resize events
-    const unlisten = listen("tauri://resize", (event) => {
-      try {
-        const payload = event.payload as { width: number; height: number };
-        const width = payload.width;
-        const height = payload.height;
-        const mode = determineMode(width, height);
-        setSize({ width, height, mode });
-      } catch (error) {
-        console.error("Error handling resize event:", error);
-      }
+    // Init
+    win.innerSize().then(({ width, height }) => {
+      const mode = pickMode(width, height);
+      setSize({ width, height, mode });
+      applyLimits(mode);
     });
 
-    return () => {
-      unlisten.then((fn) => fn());
-    };
+    // Dùng onResized có payload chuẩn, đỡ phải tự parse event
+    let raf = 0;
+    const unlistenPromise = win.onResized(({ payload: { width, height } }) => {
+      // throttle nhẹ bằng rAF để tránh spam setState
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setSize(prev => {
+          const mode = pickMode(width, height, prev.mode);
+          if (mode !== prev.mode) {
+            // đổi mode -> cập nhật min/max tương ứng
+            applyLimits(mode);
+          }
+          return { width, height, mode };
+        });
+      });
+    });
+
+    return () => { unlistenPromise.then(off => off()); };
   }, []);
 
   return size;
-}
-
-function determineMode(width: number, height: number): DisplayMode {
-  // Calculate aspect ratio
-  const ar = width / Math.max(1, height);
-
-  // Ưu tiên chiều nào chật hơn
-  if (height <= 100 || width <= 340) {
-    return "mini";
-  } else if (height > 170 && height < 260 && width > 340) {
-    return "small";
-  } else if (height <= 260 || width <= 520) {
-    return "compact";
-  } else if (ar < 1 && height > 420) {
-    // Trường hợp "cao và hẹp" -> bố cục dọc
-    return "tall";
-  } else {
-    return "full";
-  }
 }

@@ -415,6 +415,9 @@ export function MiniMode({
           setIsMuted={setIsMuted}
           youtubeUrl={youtubeUrl}
           onYouTubeUrlChange={onYouTubeUrlChange}
+          width="240px"
+          height="100%"
+          className="absolute inset-y-0 right-0"
         />
       )}
     </div>

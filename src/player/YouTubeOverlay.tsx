@@ -34,6 +34,14 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
 
   // Update overlay position when anchor changes
   const updateOverlayPosition = useCallback(() => {
+    console.log('YouTubeOverlay: updateOverlayPosition called', { 
+      anchorsCount: allAnchors.length,
+      anchors: allAnchors.map(a => ({
+        className: a.className,
+        rect: a.getBoundingClientRect()
+      }))
+    })
+    
     if (allAnchors.length === 0) {
       setOverlayStyle(prev => ({ ...prev, width: 0, height: 0, opacity: 0 }))
       return
@@ -48,10 +56,16 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
       const area = rect.width * rect.height
       
       // Only consider elements that are visible and have reasonable size
-      if (rect.width > 100 && rect.height > 100 && area > bestArea) {
+      // Lowered threshold for small mode compatibility
+      if (rect.width > 50 && rect.height > 50 && area > bestArea) {
         bestAnchor = anchor
         bestArea = area
       }
+    }
+
+    // Fallback: if no suitable anchor found, use the first one
+    if (bestArea === 0) {
+      bestAnchor = allAnchors[0]
     }
 
     const rect = bestAnchor.getBoundingClientRect()
@@ -153,7 +167,8 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
               width: '100%', 
               height: '100%',
               border: 'none',
-              display: 'block'
+              display: 'block',
+              borderRadius: '10px',
             }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
