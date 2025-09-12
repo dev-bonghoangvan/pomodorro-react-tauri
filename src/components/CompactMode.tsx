@@ -247,18 +247,19 @@ export function CompactMode({
             <span className="text-sm text-gray-300 font-medium">({modeLabel})</span>
           </div>
           <div className="flex items-center gap-2">
-            <AnimatePresence mode="sync" initial={false}>
+            <AnimatePresence mode="wait" initial={false}>
               {!isRunning ? (
                 <motion.div
                   key="start"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
                 >
                   <Button
                     onClick={onStart}
                     size="sm"
-                    className="h-8 w-8 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg flex items-center justify-center p-0"
+                    className="h-8 w-8 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
                   >
                     <Play className="h-4 w-4 ml-0.5" />
                   </Button>
@@ -267,21 +268,22 @@ export function CompactMode({
                 <motion.div
                   key="pause-next"
                   className="flex gap-2"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
                 >
                   <Button
                     onClick={onPause}
                     size="sm"
-                    className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
+                    className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
                   >
                     <Pause className="h-4 w-4" />
                   </Button>
                   <Button
                     onClick={onNext}
                     size="sm"
-                    className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
+                    className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
                   >
                     <SkipForward className="h-4 w-4" />
                   </Button>
@@ -323,14 +325,14 @@ export function CompactMode({
       </div>
 
   {/* Settings Panel Overlay */}
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         {showSettings && (
           <motion.div
             ref={panelRef}
-    initial={{ opacity: 0, y: -8, scale: 0.96 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: -6, scale: 0.96 }}
-    transition={{ duration: 0.18, ease: 'easeOut' }}
+    initial={{ opacity: 0, y: -5 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -5 }}
+    transition={{ duration: 0.15, ease: 'easeOut' }}
     className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
     role="dialog"

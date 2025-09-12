@@ -360,13 +360,14 @@ export function FullMode({
 
               {/* Time Settings */}
               <div className="flex items-center justify-center gap-2">
-                <AnimatePresence mode="sync" initial={false}>
+                <AnimatePresence mode="wait" initial={false}>
                   {editingTime === activeTab ? (
                     <motion.div
                       className="flex items-center gap-2"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
                     >
                       <Input
                         type="number"
@@ -379,7 +380,7 @@ export function FullMode({
                       <Button
                         size="sm"
                         onClick={onTimeSave}
-                        className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white transition-colors duration-150"
                       >
                         Save
                       </Button>
@@ -388,9 +389,10 @@ export function FullMode({
                     <motion.button
                       onClick={() => onTimeEdit(activeTab)}
                       className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-gray-700/50"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
                     >
                       <Settings className="w-4 h-4" />
                       {customTimes[activeTab as keyof typeof customTimes]} min
@@ -401,18 +403,19 @@ export function FullMode({
 
               {/* Control Buttons */}
               <div className="flex justify-center gap-4">
-                <AnimatePresence mode="sync" initial={false}>
+                <AnimatePresence mode="wait" initial={false}>
                   {!isRunning ? (
                     <motion.div
                       key="start"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
                     >
                       <Button
                         onClick={onStart}
                         size="lg"
-                        className="bg-white hover:bg-gray-100 text-gray-800 px-12 py-4 text-lg font-semibold shadow-lg rounded-full"
+                        className="bg-white hover:bg-gray-100 text-gray-800 px-12 py-4 text-lg font-semibold shadow-lg rounded-full transition-colors duration-150"
                       >
                         START
                       </Button>
@@ -421,21 +424,22 @@ export function FullMode({
                     <motion.div
                       key="pause-next"
                       className="flex gap-4"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
                     >
                       <Button
                         onClick={onPause}
                         size="lg"
-                        className="bg-gray-600 hover:bg-gray-500 text-white border-2 border-gray-500 px-8 py-3 text-base font-semibold shadow-lg rounded-full"
+                        className="bg-gray-600 hover:bg-gray-500 text-white border-2 border-gray-500 px-8 py-3 text-base font-semibold shadow-lg rounded-full transition-colors duration-150"
                       >
                         PAUSE
                       </Button>
                       <Button
                         onClick={onNext}
                         size="lg"
-                        className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 shadow-lg rounded-full"
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 shadow-lg rounded-full transition-colors duration-150"
                       >
                         <svg
                           className="w-5 h-5"
@@ -453,30 +457,30 @@ export function FullMode({
 
               {/* Quotes */}
               <div className="text-center w-full">
-                <AnimatePresence mode="sync" initial={false}>
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`${getCurrentQuote().en}-${getCurrentQuote().vi}-${animationKey}`}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
                     className="space-y-3"
                   >
                     <motion.p 
                       className="text-base text-emerald-400 font-medium italic leading-relaxed"
-                      initial={{ opacity: 0, y: 15 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -15 }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25, delay: 0.05 }}
                     >
                       "{getCurrentQuote().en}"
                     </motion.p>
                     <motion.p 
                       className="text-base text-blue-400 font-medium italic leading-relaxed"
-                      initial={{ opacity: 0, y: 15 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -15 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25, delay: 0.1 }}
                     >
                       "{getCurrentQuote().vi}"
                     </motion.p>
@@ -485,7 +489,7 @@ export function FullMode({
                       initial={{ opacity: 0, scaleX: 0 }}
                       animate={{ opacity: 1, scaleX: 1 }}
                       exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ duration: 0.4, delay: 0.3 }}
+                      transition={{ duration: 0.2, delay: 0.15 }}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -496,14 +500,14 @@ export function FullMode({
       </Card>
 
       {/* Settings Panel Dropdown */}
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         {showSettings && (
           <motion.div
             ref={settingsRef}
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="absolute top-20 right-4 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
           >

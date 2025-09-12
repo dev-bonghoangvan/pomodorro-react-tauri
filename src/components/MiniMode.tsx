@@ -334,18 +334,19 @@ export function MiniMode({
           >
             {/* Control Buttons */}
             <div className="flex items-center gap-2">
-              <AnimatePresence mode="sync" initial={false}>
+              <AnimatePresence mode="wait" initial={false}>
                 {!isRunning ? (
                   <motion.div
                     key="start"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                   >
                     <Button
                       onClick={onStart}
                       size="sm"
-                      className="h-8 w-8 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg flex items-center justify-center p-0"
+                      className="h-8 w-8 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
                     >
                       <Play className="h-4 w-4 ml-0.5" />
                     </Button>
@@ -354,21 +355,22 @@ export function MiniMode({
                   <motion.div
                     key="pause-next"
                     className="flex gap-2"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                   >
                     <Button
                       onClick={onPause}
                       size="sm"
-                      className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
+                      className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
                     >
                       <Pause className="h-4 w-4" />
                     </Button>
                     <Button
                       onClick={onNext}
                       size="sm"
-                      className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0"
+                      className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
                     >
                       <SkipForward className="h-4 w-4" />
                     </Button>
@@ -384,7 +386,7 @@ export function MiniMode({
                 setShowSettings(next);
                 await toggleExpand("right");
               }}
-              className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 ${
+              className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
                 showSettings
                   ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                   : "bg-gray-600 hover:bg-gray-500 text-white"

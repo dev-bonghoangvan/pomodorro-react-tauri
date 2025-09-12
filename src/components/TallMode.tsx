@@ -311,38 +311,32 @@ export function TallMode({
 
               {/* Controls */}
               <div className="flex justify-center gap-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={onPlayPause}
-                    className="h-12 w-12 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg"
-                  >
-                    {isRunning ? (
-                      <Pause className="h-5 w-5" />
-                    ) : (
-                      <Play className="h-5 w-5 ml-1" />
-                    )}
-                  </Button>
-                </motion.div>
+                <Button
+                  onClick={onPlayPause}
+                  className="h-12 w-12 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg transition-all duration-150 hover:scale-105 active:scale-95"
+                >
+                  {isRunning ? (
+                    <Pause className="h-5 w-5" />
+                  ) : (
+                    <Play className="h-5 w-5 ml-1" />
+                  )}
+                </Button>
 
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={onSkip}
-                    variant="ghost"
-                    className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg"
-                  >
-                    <SkipForward className="h-5 w-5" />
-                  </Button>
-                </motion.div>
+                <Button
+                  onClick={onSkip}
+                  variant="ghost"
+                  className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg transition-all duration-150 hover:scale-105 active:scale-95"
+                >
+                  <SkipForward className="h-5 w-5" />
+                </Button>
 
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={onReset}
-                    variant="ghost"
-                    className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg"
-                  >
-                    <RotateCcw className="h-5 w-5" />
-                  </Button>
-                </motion.div>
+                <Button
+                  onClick={onReset}
+                  variant="ghost"
+                  className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg transition-all duration-150 hover:scale-105 active:scale-95"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </Button>
               </div>
             </div>
 
@@ -352,15 +346,15 @@ export function TallMode({
                 className="text-center w-full"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.2 }}
               >
-                <AnimatePresence mode="sync" initial={false}>
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={currentQuote}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
                     className="space-y-3"
                   >
                     <p className="text-sm text-emerald-400 font-medium italic leading-relaxed">
@@ -379,13 +373,13 @@ export function TallMode({
       </Card>
 
       {/* Settings Panel Dropdown */}
-      <AnimatePresence mode="sync" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         {showSettings && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
           >
