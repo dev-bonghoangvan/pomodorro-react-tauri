@@ -59,6 +59,7 @@ export function SmallMode({
   const [vietnameseComplete, setVietnameseComplete] = useState(false);
   const [animationTarget, setAnimationTarget] = useState("-120%");
   const [isHovered, setIsHovered] = useState(false);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -123,6 +124,7 @@ export function SmallMode({
 
   // Check if both quotes are complete - wait for Vietnamese quote (which has delay)
   useEffect(() => {
+    // Only trigger animation complete if quotes are visible and both are complete
     if (englishComplete && vietnameseComplete && !isAnimationComplete) {
       // Add a small delay to ensure Vietnamese quote has fully completed
       setTimeout(() => {
@@ -160,6 +162,35 @@ export function SmallMode({
       }
     };
   }, []);
+
+  // Track window height changes
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Reset animation state when quotes become hidden
+  useEffect(() => {
+    if (!showQuotes || windowHeight < 170) {
+      setEnglishComplete(false);
+      setVietnameseComplete(false);
+      setIsAnimationComplete(false);
+    }
+  }, [showQuotes, windowHeight]);
+
+  // Reset animation state when quotes become visible again
+  useEffect(() => {
+    if (showQuotes && windowHeight >= 170) {
+      // Reset animation state when quotes become visible
+      setEnglishComplete(false);
+      setVietnameseComplete(false);
+      setIsAnimationComplete(false);
+    }
+  }, [showQuotes, windowHeight]);
 
   // Trigger YouTube position update when hover state changes
   useEffect(() => {
@@ -371,42 +402,51 @@ export function SmallMode({
 
         {/* Quotes Section - Bottom */}
         <div className="absolute bottom-2 left-2 right-2">
-          {showQuotes && (
-            <div className="mb-1">
-              <div ref={containerRef} className="overflow-hidden">
-                <motion.div
-                  key={`${animationKey}-${currentQuote.en}-english-${showQuotes}`}
-                  className="whitespace-nowrap text-xs text-blue-400 font-medium italic"
-                  initial={{ x: "100%" }}
-                  animate={{ x: animationTarget }}
-                  transition={{ duration: animationDuration, ease: "linear" }}
-                  onAnimationComplete={() => {
-                    if (!englishComplete) {
-                      setEnglishComplete(true);
-                    }
-                  }}
-                >
-                  "{currentQuote.en}"
-                </motion.div>
-              </div>
-              <div className="overflow-hidden mt-0.5">
-                <motion.div
-                  key={`${animationKey}-${currentQuote.vi}-vietnamese-${showQuotes}`}
-                  className="whitespace-nowrap text-xs text-emerald-400 font-medium italic"
-                  initial={{ x: "100%" }}
-                  animate={{ x: animationTarget }}
-                  transition={{ duration: animationDuration, ease: "linear" }}
-                  onAnimationComplete={() => {
-                    if (!vietnameseComplete) {
-                      setVietnameseComplete(true);
-                    }
-                  }}
-                >
-                  "{currentQuote.vi}"
-                </motion.div>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {showQuotes && windowHeight >= 170 && (
+              <motion.div
+                key="quotes"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="mb-1"
+              >
+                <div ref={containerRef} className="overflow-hidden">
+                  <motion.div
+                    key={`${animationKey}-${currentQuote.en}-english`}
+                    className="whitespace-nowrap text-xs text-blue-400 font-medium italic"
+                    initial={{ x: "100%" }}
+                    animate={{ x: animationTarget }}
+                    transition={{ duration: animationDuration, ease: "linear" }}
+                    onAnimationComplete={() => {
+                      if (!englishComplete) {
+                        setEnglishComplete(true);
+                      }
+                    }}
+                  >
+                    "{currentQuote.en}"
+                  </motion.div>
+                </div>
+                <div className="overflow-hidden mt-0.5">
+                  <motion.div
+                    key={`${animationKey}-${currentQuote.vi}-vietnamese`}
+                    className="whitespace-nowrap text-xs text-emerald-400 font-medium italic"
+                    initial={{ x: "100%" }}
+                    animate={{ x: animationTarget }}
+                    transition={{ duration: animationDuration, ease: "linear" }}
+                    onAnimationComplete={() => {
+                      if (!vietnameseComplete) {
+                        setVietnameseComplete(true);
+                      }
+                    }}
+                  >
+                    "{currentQuote.vi}"
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
