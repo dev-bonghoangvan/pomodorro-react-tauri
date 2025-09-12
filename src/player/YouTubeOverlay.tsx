@@ -29,7 +29,8 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
     width: 0,
     height: 0,
     zIndex: 1000,
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    transition: 'all 0.2s ease-out'
   })
 
   // Update overlay position when anchor changes
@@ -47,24 +48,44 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
       return
     }
 
-    // Find the largest visible anchor element
+    // Find the best visible anchor element
     let bestAnchor = allAnchors[0]
-    let bestArea = 0
+    let bestScore = 0
     
     for (const anchor of allAnchors) {
       const rect = anchor.getBoundingClientRect()
       const area = rect.width * rect.height
       
-      // Only consider elements that are visible and have reasonable size
-      // Lowered threshold for small mode compatibility
-      if (rect.width > 50 && rect.height > 50 && area > bestArea) {
+      // Calculate score based on visibility and size
+      // Prioritize elements that are visible and have reasonable size
+      let score = 0
+      
+      if (rect.width > 0 && rect.height > 0) {
+        // Base score for visible elements
+        score = area
+        
+        // Bonus for larger elements (but don't exclude small ones completely)
+        if (rect.width > 50 && rect.height > 50) {
+          score *= 1.5 // 50% bonus for larger elements
+        } else if (rect.width > 20 && rect.height > 20) {
+          score *= 1.2 // 20% bonus for medium elements
+        }
+        // Small elements (like MiniMode w-8 h-8 = 32x32px) get base score
+        
+        // Penalty for elements that are too small (less than 16x16)
+        if (rect.width < 16 || rect.height < 16) {
+          score *= 0.1
+        }
+      }
+      
+      if (score > bestScore) {
         bestAnchor = anchor
-        bestArea = area
+        bestScore = score
       }
     }
 
     // Fallback: if no suitable anchor found, use the first one
-    if (bestArea === 0) {
+    if (bestScore === 0) {
       bestAnchor = allAnchors[0]
     }
 
@@ -74,11 +95,17 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
       left: rect.left,
       width: rect.width,
       height: rect.height,
-      area: bestArea,
-      element: bestAnchor.className
+      score: bestScore,
+      element: bestAnchor.className,
+      allAnchors: allAnchors.map(a => ({
+        className: a.className,
+        rect: a.getBoundingClientRect(),
+        area: a.getBoundingClientRect().width * a.getBoundingClientRect().height
+      }))
     })
     
-    setOverlayStyle({
+    setOverlayStyle(prev => ({
+      ...prev,
       position: 'fixed',
       top: rect.top,
       left: rect.left,
@@ -87,12 +114,30 @@ export function YouTubeOverlayProvider({ children }: { children: React.ReactNode
       zIndex: 1000,
       pointerEvents: 'auto',
       opacity: 1
-    })
+    }))
   }, [allAnchors])
 
   // Update position when anchor changes
   useEffect(() => {
     updateOverlayPosition()
+  }, [updateOverlayPosition])
+
+  // Additional effect to handle layout changes with debounce
+  useEffect(() => {
+    let timeoutId: number
+    
+    const handleLayoutChange = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(updateOverlayPosition, 50)
+    }
+    
+    // Listen for custom resize events
+    window.addEventListener('resize', handleLayoutChange)
+    
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', handleLayoutChange)
+    }
   }, [updateOverlayPosition])
 
   // Update position on window resize

@@ -185,12 +185,29 @@ export function MiniMode({
       hoverTimeoutRef.current = null;
     }
     setIsHovered(true);
+    
+    // Force YouTube position update when hover state changes
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
   };
 
   const handleMouseLeave = () => {
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
     }, 2000); // 2 seconds delay
+    
+    // Force YouTube position update immediately when mouse leaves
+    // This prevents the "jumping" effect
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 10);
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
   };
 
   // Cleanup timeout on unmount
@@ -201,6 +218,20 @@ export function MiniMode({
       }
     };
   }, []);
+
+  // Trigger YouTube position update when hover state changes
+  useEffect(() => {
+    // Multiple triggers to ensure position updates correctly
+    const timeouts = [
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 50),
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 150),
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 300),
+    ];
+
+    return () => {
+      timeouts.forEach(timeout => clearTimeout(timeout));
+    };
+  }, [isHovered]);
 
   // NOTE: Removed auto-sync that opened settings when width > collapsed.
   // Keep settings closed by default; only user interaction (button) toggles it.
