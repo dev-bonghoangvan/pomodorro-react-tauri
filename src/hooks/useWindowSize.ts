@@ -1,69 +1,76 @@
-import { useState, useEffect } from 'react'
-import { listen } from '@tauri-apps/api/event'
-import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window'
+import { useEffect, useState } from "react";
 
-export type DisplayMode = 'mini' | 'compact' | 'tall' | 'full'
+import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+
+export type DisplayMode = "mini" | "compact" | "tall" | "full" | "small";
 
 export interface WindowSize {
-  width: number
-  height: number
-  mode: DisplayMode
+  width: number;
+  height: number;
+  mode: DisplayMode;
 }
 
 export function useWindowSize(): WindowSize {
-  const [size, setSize] = useState<WindowSize>({ width: 300, height: 200, mode: 'mini' })
+  const [size, setSize] = useState<WindowSize>({
+    width: 300,
+    height: 200,
+    mode: "mini",
+  });
 
   useEffect(() => {
     // Get initial size
     const getInitialSize = async () => {
       try {
-        const window = getCurrentWindow()
-        const logicalSize = await window.innerSize()
-        const width = logicalSize.width
-        const height = logicalSize.height
-        const mode = determineMode(width, height)
-        setSize({ width, height, mode })
+        const window = getCurrentWindow();
+        const logicalSize = await window.innerSize();
+        const width = logicalSize.width;
+        const height = logicalSize.height;
+        const mode = determineMode(width, height);
+        setSize({ width, height, mode });
       } catch (error) {
-        console.error('Error getting initial window size:', error)
+        console.error("Error getting initial window size:", error);
       }
-    }
+    };
 
-    getInitialSize()
+    getInitialSize();
 
     // Listen for window resize events
-    const unlisten = listen('tauri://resize', (event) => {
+    const unlisten = listen("tauri://resize", (event) => {
       try {
-        const payload = event.payload as { width: number; height: number }
-        const width = payload.width
-        const height = payload.height
-        const mode = determineMode(width, height)
-        setSize({ width, height, mode })
+        const payload = event.payload as { width: number; height: number };
+        const width = payload.width;
+        const height = payload.height;
+        const mode = determineMode(width, height);
+        setSize({ width, height, mode });
       } catch (error) {
-        console.error('Error handling resize event:', error)
+        console.error("Error handling resize event:", error);
       }
-    })
+    });
 
     return () => {
-      unlisten.then(fn => fn())
-    }
-  }, [])
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
-  return size
+  return size;
 }
 
 function determineMode(width: number, height: number): DisplayMode {
   // Calculate aspect ratio
   const ar = width / Math.max(1, height);
-  
+
   // Ưu tiên chiều nào chật hơn
   if (height <= 100 || width <= 340) {
-    return 'mini'
+    return "mini";
+  } else if (height > 170 && height < 260 && width > 340) {
+    return "small";
   } else if (height <= 260 || width <= 520) {
-    return 'compact'
+    return "compact";
   } else if (ar < 1 && height > 420) {
     // Trường hợp "cao và hẹp" -> bố cục dọc
-    return 'tall'
+    return "tall";
   } else {
-    return 'full'
+    return "full";
   }
 }

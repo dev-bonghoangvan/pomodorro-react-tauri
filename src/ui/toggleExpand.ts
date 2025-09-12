@@ -1,8 +1,8 @@
+import { LogicalPosition, LogicalSize } from "@tauri-apps/api/dpi";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { LogicalSize, LogicalPosition } from "@tauri-apps/api/dpi";
 
 // Collapsed and expanded widths for the MiniMode window
-export const COLLAPSED_W = 280; // must match MiniMode main section width
+export const COLLAPSED_W = 320; // must match MiniMode main section width
 export const EXPANDED_W = 520; // collapsed + settings panel width
 
 /**

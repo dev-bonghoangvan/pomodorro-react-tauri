@@ -1,21 +1,24 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { Clock, Coffee, Timer } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from "framer-motion";
+import { Clock, Coffee, Timer } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import { invoke } from '@tauri-apps/api/core';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
-import { CompactMode } from './components/CompactMode';
-import { FullMode } from './components/FullMode';
-import { MiniMode } from './components/MiniMode';
-import { TallMode } from './components/TallMode';
-import { useWindowSize } from './hooks/useWindowSize';
-import quotesData from './quotes/quotes.json';
-import { YouTubeOverlayProvider, useYouTubeOverlay } from './player/YouTubeOverlay';
+import { CompactMode } from "./components/CompactMode";
+import { FullMode } from "./components/FullMode";
+import { MiniMode } from "./components/MiniMode";
+import { SmallMode } from "./components/SmallMode";
+import { TallMode } from "./components/TallMode";
+import { useWindowSize } from "./hooks/useWindowSize";
+import {
+  useYouTubeOverlay,
+  YouTubeOverlayProvider,
+} from "./player/YouTubeOverlay";
+import quotesData from "./quotes/quotes.json";
 // @ts-ignore
-import USAFlag from './svgs/usa.svg';
+import USAFlag from "./svgs/usa.svg";
 // @ts-ignore
-import VietnamFlag from './svgs/vietnam.svg';
+import VietnamFlag from "./svgs/vietnam.svg";
 
 function useInterval(callback: () => void, delay: number | null) {
   const saved = useRef(callback);
@@ -133,7 +136,6 @@ function AppContent() {
     }
   }, [timeLeft, isRunning]);
 
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -217,11 +219,10 @@ function AppContent() {
       /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
     );
     if (videoId) {
-      console.log('App: Setting video ID to', videoId[1])
+      console.log("App: Setting video ID to", videoId[1]);
       setVideoId(videoId[1]);
     }
   }, [youtubeUrl, setVideoId]);
-
 
   const getProgress = () => {
     const totalTime = customTimes[activeTab as keyof typeof customTimes] * 60;
@@ -251,10 +252,8 @@ function AppContent() {
     return quotesData[currentQuoteIndex];
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background overflow-hidden relative">
-
       {/* Render different modes based on window size */}
       <AnimatePresence mode="sync" initial={false}>
         {mode === "mini" && (
@@ -294,7 +293,44 @@ function AppContent() {
           </motion.div>
         )}
 
-    {mode === "compact" && (
+        {mode === "small" && (
+          <motion.div
+            key="small"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="h-screen"
+          >
+            <SmallMode
+              timeLeft={timeLeft}
+              isRunning={isRunning}
+              activeTab={activeTab}
+              onStart={handleStart}
+              onPause={handlePause}
+              onNext={handleNext}
+              getProgress={getProgress}
+              formatTime={formatTime}
+              currentQuote={getCurrentQuoteObject()}
+              youtubeUrl={youtubeUrl}
+              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
+              customTimes={customTimes}
+              onWorkTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, focus: value }))
+              }
+              onShortBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
+              }
+              onLongBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
+              }
+              onAnimationComplete={handleQuoteAnimationComplete}
+              onYouTubeUrlChange={setYoutubeUrl}
+            />
+          </motion.div>
+        )}
+
+        {mode === "compact" && (
           <motion.div
             key="compact"
             initial={{ opacity: 0 }}
@@ -308,7 +344,7 @@ function AppContent() {
               isRunning={isRunning}
               activeTab={activeTab}
               customTimes={customTimes}
-      currentQuote={getCurrentQuoteObject()}
+              currentQuote={getCurrentQuoteObject()}
               onStart={handleStart}
               onPause={handlePause}
               onNext={handleNext}
@@ -328,7 +364,7 @@ function AppContent() {
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
               onYouTubeUrlChange={setYoutubeUrl}
-      onAnimationComplete={handleQuoteAnimationComplete}
+              onAnimationComplete={handleQuoteAnimationComplete}
             />
           </motion.div>
         )}
