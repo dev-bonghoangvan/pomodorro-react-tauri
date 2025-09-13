@@ -11,6 +11,7 @@ import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { YouTubeAnchor } from '../player/YouTubeOverlay';
 import quotesData from '../quotes/quotes.json';
+import SettingsPanel from './SettingsPanel';
 
 interface TallModeProps {
   timeLeft: number;
@@ -30,6 +31,12 @@ interface TallModeProps {
   onWorkTimeChange: (value: number) => void;
   onShortBreakTimeChange: (value: number) => void;
   onLongBreakTimeChange: (value: number) => void;
+  autoStartNext: boolean;
+  setAutoStartNext: (value: boolean) => void;
+  autoStartBreakType: 'short' | 'long';
+  setAutoStartBreakType: (value: 'short' | 'long') => void;
+  roundsPerCycle: number;
+  setRoundsPerCycle: (value: number) => void;
   customTimes: { focus: number; shortBreak: number; longBreak: number };
   youtubeUrl: string;
   getYouTubeEmbedUrl: (url: string) => string;
@@ -53,12 +60,17 @@ export function TallMode({
   onWorkTimeChange,
   onShortBreakTimeChange,
   onLongBreakTimeChange,
+  autoStartNext,
+  setAutoStartNext,
+  autoStartBreakType,
+  setAutoStartBreakType,
+  roundsPerCycle,
+  setRoundsPerCycle,
   customTimes,
   youtubeUrl,
   getYouTubeEmbedUrl,
 }: TallModeProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -419,133 +431,27 @@ export function TallMode({
             className="absolute top-16 right-4 w-80 bg-slate-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Settings Header */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
-              <h2 className="text-lg font-bold text-white">Settings</h2>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="w-6 h-6 rounded-full bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Quick Settings */}
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wide">
-                Quick Settings
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 text-sm">
-                    Rounds per cycle
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() =>
-                        setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))
-                      }
-                      className="w-8 h-8 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center transition-colors"
-                    >
-                      <Minus className="h-4 w-4 text-white" />
-                    </button>
-                    <span className="text-white font-mono w-8 text-center text-lg">
-                      {roundsPerCycle}
-                    </span>
-                    <button
-                      onClick={() => setRoundsPerCycle(roundsPerCycle + 1)}
-                      className="w-8 h-8 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center transition-colors"
-                    >
-                      <Plus className="h-4 w-4 text-white" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Durations */}
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wide">
-                Durations
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 text-sm">Focus</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        onWorkTimeChange(Math.max(1, customTimes.focus - 1))
-                      }
-                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
-                    >
-                      -1m
-                    </button>
-                    <span className="text-white font-mono w-12 text-center text-lg">
-                      {customTimes.focus}m
-                    </span>
-                    <button
-                      onClick={() => onWorkTimeChange(customTimes.focus + 1)}
-                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
-                    >
-                      +1m
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 text-sm">Short Break</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        onShortBreakTimeChange(
-                          Math.max(1, customTimes.shortBreak - 1)
-                        )
-                      }
-                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
-                    >
-                      -1m
-                    </button>
-                    <span className="text-white font-mono w-12 text-center text-lg">
-                      {customTimes.shortBreak}m
-                    </span>
-                    <button
-                      onClick={() =>
-                        onShortBreakTimeChange(customTimes.shortBreak + 1)
-                      }
-                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
-                    >
-                      +1m
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 text-sm">Long Break</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        onLongBreakTimeChange(
-                          Math.max(1, customTimes.longBreak - 1)
-                        )
-                      }
-                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
-                    >
-                      -1m
-                    </button>
-                    <span className="text-white font-mono w-12 text-center text-lg">
-                      {customTimes.longBreak}m
-                    </span>
-                    <button
-                      onClick={() =>
-                        onLongBreakTimeChange(customTimes.longBreak + 1)
-                      }
-                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
-                    >
-                      +1m
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            <SettingsPanel
+              onClose={() => setShowSettings(false)}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
+              customTimes={customTimes}
+              onWorkTimeChange={onWorkTimeChange}
+              onShortBreakTimeChange={onShortBreakTimeChange}
+              onLongBreakTimeChange={onLongBreakTimeChange}
+              quoteSpeed="Normal"
+              setQuoteSpeed={() => {}}
+              showQuotes={true}
+              setShowQuotes={() => {}}
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              youtubeUrl={youtubeUrl}
+              onYouTubeUrlChange={() => {}}
+              width="240px"
+              height="100%"
+            />
           </motion.div>
         )}
       </AnimatePresence>

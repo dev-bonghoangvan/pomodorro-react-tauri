@@ -10,6 +10,7 @@ import { MiniMode } from "./components/MiniMode";
 import { SmallMode } from "./components/SmallMode";
 import { TallMode } from "./components/TallMode";
 import { useWindowSize } from "./hooks/useWindowSize";
+import { useTimer } from "./hooks/useTimer";
 import {
   useYouTubeOverlay,
   YouTubeOverlayProvider,
@@ -33,9 +34,6 @@ function useInterval(callback: () => void, delay: number | null) {
 }
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState("focus");
-  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
-  const [isRunning, setIsRunning] = useState(false);
   const [isYouTubeExpanded, setIsYouTubeExpanded] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState(
     "https://www.youtube.com/watch?v=YNDT833ahtc"
@@ -50,20 +48,35 @@ function AppContent() {
   const [tempTime, setTempTime] = useState("");
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVietnamese, setIsVietnamese] = useState(false); // Default to English
-  const intervalRef = useRef<number | null>(null);
+  const [autoStartNext, setAutoStartNext] = useState(false);
+  const [autoStartBreakType, setAutoStartBreakType] = useState<'short' | 'long'>('short');
+  const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const { setVideoId } = useYouTubeOverlay();
+
+  // Use the custom timer hook
+  const {
+    timeLeft,
+    isRunning,
+    activeTab,
+    completedRounds,
+    setTimeLeft,
+    setIsRunning,
+    setActiveTab,
+    setCompletedRounds,
+    handleStart,
+    handlePause,
+    handleStop,
+    handleNext,
+    resetTimer,
+  } = useTimer({
+    autoStartNext,
+    autoStartBreakType,
+    roundsPerCycle,
+    customTimes,
+  });
 
   // Get window size and display mode
   const { width, height, mode } = useWindowSize();
-
-  // Remove fixed interval - quotes will change based on animation completion
-  // useEffect(() => {
-  //   const quoteInterval = setInterval(() => {
-  //     setCurrentQuoteIndex((prev) => (prev + 1) % quotesData.length);
-  //   }, 6000);
-
-  //   return () => clearInterval(quoteInterval);
-  // }, [quotesData.length]);
 
   // When a quote animation completes (MiniMode) pick a new random quote (avoid immediate repeat)
   const handleQuoteAnimationComplete = () => {
@@ -78,63 +91,6 @@ function AppContent() {
     });
   };
 
-  // Timer logic
-  useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isRunning, timeLeft]);
-
-  // Update timer when tab changes
-  useEffect(() => {
-    setIsRunning(false);
-    switch (activeTab) {
-      case "focus":
-        setTimeLeft(customTimes.focus * 60);
-        break;
-      case "shortBreak":
-        setTimeLeft(customTimes.shortBreak * 60);
-        break;
-      case "longBreak":
-        setTimeLeft(customTimes.longBreak * 60);
-        break;
-    }
-  }, [activeTab, customTimes]);
-
-  // Sound notification when timer ends
-  useEffect(() => {
-    if (timeLeft === 0 && isRunning) {
-      // beep sound
-      try {
-        const ctx = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g);
-        g.connect(ctx.destination);
-        o.type = "sine";
-        o.frequency.value = 880;
-        g.gain.value = 0.1;
-        o.start();
-        setTimeout(() => {
-          o.stop();
-          ctx.close();
-        }, 600);
-      } catch {}
-    }
-  }, [timeLeft, isRunning]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -142,30 +98,6 @@ function AppContent() {
     return `${mins.toString().padStart(2, "0")}:${secs
       .toString()
       .padStart(2, "0")}`;
-  };
-
-  const handleStart = () => setIsRunning(true);
-  const handlePause = () => setIsRunning(false);
-  const handleStop = () => {
-    setIsRunning(false);
-    switch (activeTab) {
-      case "focus":
-        setTimeLeft(customTimes.focus * 60);
-        break;
-      case "shortBreak":
-        setTimeLeft(customTimes.shortBreak * 60);
-        break;
-      case "longBreak":
-        setTimeLeft(customTimes.longBreak * 60);
-        break;
-    }
-  };
-
-  const handleNext = () => {
-    const tabs = ["focus", "shortBreak", "longBreak"];
-    const currentIndex = tabs.indexOf(activeTab);
-    const nextIndex = (currentIndex + 1) % tabs.length;
-    setActiveTab(tabs[nextIndex]);
   };
 
   const getYouTubeEmbedUrl = (url: string) => {
@@ -287,6 +219,12 @@ function AppContent() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
               onAnimationComplete={handleQuoteAnimationComplete}
               onYouTubeUrlChange={setYoutubeUrl}
             />
@@ -324,6 +262,12 @@ function AppContent() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
               onAnimationComplete={handleQuoteAnimationComplete}
               onYouTubeUrlChange={setYoutubeUrl}
             />
@@ -363,6 +307,12 @@ function AppContent() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
               onYouTubeUrlChange={setYoutubeUrl}
               onAnimationComplete={handleQuoteAnimationComplete}
             />
@@ -405,6 +355,12 @@ function AppContent() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
               customTimes={customTimes}
               youtubeUrl={youtubeUrl}
               getYouTubeEmbedUrl={getYouTubeEmbedUrl}
@@ -451,6 +407,12 @@ function AppContent() {
               onLongBreakTimeChange={(value) =>
                 setCustomTimes((prev) => ({ ...prev, longBreak: value }))
               }
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
               getProgress={getProgress}
               formatTime={formatTime}
               getTabIcon={getTabIcon}

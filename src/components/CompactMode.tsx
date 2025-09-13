@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '../ui/button';
 import { YouTubeAnchor } from '../player/YouTubeOverlay';
+import SettingsPanel from './SettingsPanel';
 
 interface CompactModeProps {
   timeLeft: number;
@@ -26,6 +27,12 @@ interface CompactModeProps {
   onWorkTimeChange: (value: number) => void;
   onShortBreakTimeChange: (value: number) => void;
   onLongBreakTimeChange: (value: number) => void;
+  autoStartNext: boolean;
+  setAutoStartNext: (value: boolean) => void;
+  autoStartBreakType: 'short' | 'long';
+  setAutoStartBreakType: (value: 'short' | 'long') => void;
+  roundsPerCycle: number;
+  setRoundsPerCycle: (value: number) => void;
   onYouTubeUrlChange?: (url: string) => void;
   onAnimationComplete?: () => void; // trigger next random quote after both lines done
 }
@@ -48,11 +55,16 @@ export function CompactMode({
   onWorkTimeChange,
   onShortBreakTimeChange,
   onLongBreakTimeChange,
+  autoStartNext,
+  setAutoStartNext,
+  autoStartBreakType,
+  setAutoStartBreakType,
+  roundsPerCycle,
+  setRoundsPerCycle,
   onYouTubeUrlChange,
   onAnimationComplete,
 }: CompactModeProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
   const [tempYoutube, setTempYoutube] = useState(youtubeUrl);
@@ -352,181 +364,36 @@ export function CompactMode({
         {showSettings && (
           <motion.div
             ref={panelRef}
-    initial={{ opacity: 0, y: -5 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -5 }}
-    transition={{ duration: 0.15, ease: 'easeOut' }}
-    className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
-    role="dialog"
-    aria-label="Compact settings"
+            role="dialog"
+            aria-label="Compact settings"
           >
-            {/* Settings Header */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-600">
-              <h2 className="text-lg font-bold text-white">Settings</h2>
-              <button
-                onClick={() => setShowSettings(false)}
-        className="w-7 h-7 rounded-full bg-gray-600/90 hover:bg-gray-500 flex items-center justify-center text-white transition-colors"
-        aria-label="Close settings"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Quick Settings */}
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                Quick Settings
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">
-                    Rounds per cycle
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))
-                      }
-                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Decrease rounds"
-                    >
-                      <Minus className="h-3 w-3 text-white" />
-                    </button>
-                    <span className="text-white font-mono w-8 text-center">
-                      {roundsPerCycle}
-                    </span>
-                    <button
-                      onClick={() => setRoundsPerCycle(roundsPerCycle + 1)}
-                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Increase rounds"
-                    >
-                      <Plus className="h-3 w-3 text-white" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Durations */}
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                Durations
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Focus</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        onWorkTimeChange(Math.max(1, customTimes.focus - 1))
-                      }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Decrease focus time"
-                    >
-                      -1m
-                    </button>
-                    <span className="text-white font-mono w-12 text-center">
-                      {customTimes.focus}m
-                    </span>
-                    <button
-                      onClick={() => onWorkTimeChange(customTimes.focus + 1)}
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Increase focus time"
-                    >
-                      +1m
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Short</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        onShortBreakTimeChange(
-                          Math.max(1, customTimes.shortBreak - 1)
-                        )
-                      }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Decrease short break"
-                    >
-                      -1m
-                    </button>
-                    <span className="text-white font-mono w-12 text-center">
-                      {customTimes.shortBreak}m
-                    </span>
-                    <button
-                      onClick={() =>
-                        onShortBreakTimeChange(customTimes.shortBreak + 1)
-                      }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Increase short break"
-                    >
-                      +1m
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Long</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        onLongBreakTimeChange(
-                          Math.max(1, customTimes.longBreak - 1)
-                        )
-                      }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Decrease long break"
-                    >
-                      -1m
-                    </button>
-                    <span className="text-white font-mono w-12 text-center">
-                      {customTimes.longBreak}m
-                    </span>
-                    <button
-                      onClick={() =>
-                        onLongBreakTimeChange(customTimes.longBreak + 1)
-                      }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
-                      aria-label="Increase long break"
-                    >
-                      +1m
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* YouTube URL */}
-            {onYouTubeUrlChange && (
-              <div>
-                <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                  Media
-                </h3>
-                <div className="space-y-2">
-                  <label className="text-gray-300 text-xs font-semibold uppercase tracking-wide">YouTube URL</label>
-                  <input
-                    value={tempYoutube}
-                    onChange={e => setTempYoutube(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && onYouTubeUrlChange) { onYouTubeUrlChange(tempYoutube.trim()); } }}
-                    onBlur={() => { if (onYouTubeUrlChange) onYouTubeUrlChange(tempYoutube.trim()); }}
-                    placeholder="Paste YouTube link..."
-                    className="w-full px-3 py-2 rounded-md bg-gray-700/70 border border-gray-600 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/60"
-                  />
-                </div>
-                {/* Quotes toggle */}
-                <div className="mt-6 flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Show Quotes</span>
-                  <button
-                    onClick={() => setShowQuotes(q => !q)}
-                    className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${showQuotes ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
-                    aria-pressed={showQuotes}
-                  >
-                    {showQuotes ? 'ON' : 'OFF'}
-                  </button>
-                </div>
-              </div>
-            )}
+            <SettingsPanel
+              onClose={() => setShowSettings(false)}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
+              customTimes={customTimes}
+              onWorkTimeChange={onWorkTimeChange}
+              onShortBreakTimeChange={onShortBreakTimeChange}
+              onLongBreakTimeChange={onLongBreakTimeChange}
+              quoteSpeed={quoteSpeed}
+              setQuoteSpeed={setQuoteSpeed}
+              showQuotes={showQuotes}
+              setShowQuotes={setShowQuotes}
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              youtubeUrl={youtubeUrl}
+              onYouTubeUrlChange={onYouTubeUrlChange}
+              width="240px"
+              height="100%"
+            />
           </motion.div>
         )}
       </AnimatePresence>

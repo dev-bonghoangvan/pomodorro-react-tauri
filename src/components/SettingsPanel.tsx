@@ -14,6 +14,10 @@ export interface SettingsPanelProps {
   setQuoteSpeed: (v: string) => void;
   showQuotes: boolean;
   setShowQuotes: (v: boolean) => void;
+  autoStartNext: boolean;
+  setAutoStartNext: (v: boolean) => void;
+  autoStartBreakType: 'short' | 'long';
+  setAutoStartBreakType: (v: 'short' | 'long') => void;
   youtubeUrl: string;
   onYouTubeUrlChange?: (url: string) => void;
   className?: string;
@@ -37,6 +41,10 @@ export function SettingsPanel({
   setQuoteSpeed,
   showQuotes,
   setShowQuotes,
+  autoStartNext,
+  setAutoStartNext,
+  autoStartBreakType,
+  setAutoStartBreakType,
   youtubeUrl,
   onYouTubeUrlChange,
   className = '',
@@ -68,6 +76,51 @@ export function SettingsPanel({
         </button>
       </div>
       <div className="space-y-6">
+        {/* Auto Start Next */}
+        <div>
+          <h3 className="text-gray-300 font-semibold mb-2">Auto Start Next</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Enable auto transition</span>
+              <button
+                onClick={() => setAutoStartNext(!autoStartNext)}
+                className={`px-3 h-6 rounded text-xs font-medium transition-colors ${autoStartNext ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
+              >
+                {autoStartNext ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            {autoStartNext && (
+              <div className="ml-4 space-y-2">
+                <div className="text-gray-400 text-xs mb-2">Break type:</div>
+                <div className="space-y-1">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="breakType"
+                      value="short"
+                      checked={autoStartBreakType === 'short'}
+                      onChange={(e) => setAutoStartBreakType(e.target.value as 'short' | 'long')}
+                      className="w-3 h-3 text-emerald-600 bg-gray-700 border-gray-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-gray-300 text-xs">Short Break</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="breakType"
+                      value="long"
+                      checked={autoStartBreakType === 'long'}
+                      onChange={(e) => setAutoStartBreakType(e.target.value as 'short' | 'long')}
+                      className="w-3 h-3 text-emerald-600 bg-gray-700 border-gray-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-gray-300 text-xs">Long Break</span>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Quick Settings */}
         <div>
           <h3 className="text-gray-300 font-semibold mb-2 text-xs">Quick Settings</h3>

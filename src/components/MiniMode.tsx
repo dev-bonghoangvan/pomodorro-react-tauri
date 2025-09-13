@@ -32,6 +32,12 @@ interface MiniModeProps {
   onWorkTimeChange: (value: number) => void;
   onShortBreakTimeChange: (value: number) => void;
   onLongBreakTimeChange: (value: number) => void;
+  autoStartNext: boolean;
+  setAutoStartNext: (value: boolean) => void;
+  autoStartBreakType: 'short' | 'long';
+  setAutoStartBreakType: (value: 'short' | 'long') => void;
+  roundsPerCycle: number;
+  setRoundsPerCycle: (value: number) => void;
   onAnimationComplete?: () => void;
   onYouTubeUrlChange?: (url: string) => void; // optional to avoid breaking existing callers
 }
@@ -52,11 +58,16 @@ export function MiniMode({
   onWorkTimeChange,
   onShortBreakTimeChange,
   onLongBreakTimeChange,
+  autoStartNext,
+  setAutoStartNext,
+  autoStartBreakType,
+  setAutoStartBreakType,
+  roundsPerCycle,
+  setRoundsPerCycle,
   onAnimationComplete,
   onYouTubeUrlChange,
 }: MiniModeProps) {
   const [showSettings, setShowSettings] = useState(false); // logical state (expanded)
-  const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
   const [animationDuration, setAnimationDuration] = useState(15);
@@ -443,6 +454,10 @@ export function MiniMode({
           setQuoteSpeed={setQuoteSpeed}
           showQuotes={showQuotes}
           setShowQuotes={setShowQuotes}
+          autoStartNext={autoStartNext}
+          setAutoStartNext={setAutoStartNext}
+          autoStartBreakType={autoStartBreakType}
+          setAutoStartBreakType={setAutoStartBreakType}
           youtubeUrl={youtubeUrl}
           onYouTubeUrlChange={onYouTubeUrlChange}
           width="240px"
