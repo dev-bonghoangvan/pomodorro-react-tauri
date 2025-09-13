@@ -46,7 +46,7 @@ function pickMode(width: number, height: number, prev?: DisplayMode): DisplayMod
     return "compact";
   }
   // Nếu height < 760px thì chuyển sang tall mode thay vì full mode
-  if (height < 760 - (prev === "tall" ? HYSTERESIS : 0)) {
+  if (height < 768 - (prev === "tall" ? HYSTERESIS : 0)) {
     return "tall";
   }
   if (ar < 1 && height >= 420 - (prev === "tall" ? HYSTERESIS : 0) && width <= 540 + (prev === "tall" ? HYSTERESIS : 0)) {

@@ -75,7 +75,7 @@ export function SmallMode({
   const containerRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
-  // Calculate animation duration based on actual UI dimensions
+  // Calculate animation duration based on actual UI dimensions - only when quote changes
   useEffect(() => {
     const calculateDuration = () => {
       if (containerRef.current) {
@@ -121,18 +121,8 @@ export function SmallMode({
 
     const timeoutId = setTimeout(calculateDuration, 100);
 
-    const handleResize = () => {
-      // Reset animation state immediately on resize
-      setIsAnimationComplete(false);
-      setEnglishComplete(false);
-      setVietnameseComplete(false);
-      setTimeout(calculateDuration, 150);
-    };
-    window.addEventListener("resize", handleResize);
-
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener("resize", handleResize);
     };
   }, [currentQuote]);
 
@@ -212,9 +202,9 @@ export function SmallMode({
     }
   }, [showQuotes, windowHeight]);
 
-  // Trigger YouTube position update when hover state changes
+  // Separate effect for YouTube position updates on hover - doesn't affect quotes animation
   useEffect(() => {
-    // Multiple triggers to ensure position updates correctly
+    // Force YouTube position update when hover state changes (both hover in and hover out)
     const timeouts = [
       setTimeout(() => window.dispatchEvent(new Event('resize')), 50),
       setTimeout(() => window.dispatchEvent(new Event('resize')), 150),
@@ -226,38 +216,6 @@ export function SmallMode({
     };
   }, [isHovered]);
 
-  // Additional observer for layout changes
-  useEffect(() => {
-    if (!settingsRef.current) return;
-
-    const observer = new ResizeObserver(() => {
-      // Trigger position update when container size changes
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-      }, 50);
-    });
-
-    // Also observe style changes on the main container
-    const styleObserver = new MutationObserver(() => {
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-      }, 100);
-    });
-
-    observer.observe(settingsRef.current);
-    
-    if (settingsRef.current) {
-      styleObserver.observe(settingsRef.current, {
-        attributes: true,
-        attributeFilter: ['class', 'style']
-      });
-    }
-
-    return () => {
-      observer.disconnect();
-      styleObserver.disconnect();
-    };
-  }, []);
 
   const modeLabel =
     activeTab === "focus"

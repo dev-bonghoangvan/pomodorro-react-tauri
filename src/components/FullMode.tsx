@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, X
+    Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, X, Target, Zap, Star
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -242,7 +242,7 @@ export function FullMode({
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white" style={{ color: "#1DB954" }}>Let's Focus To Your Dreams</h1>
-                <p className="text-xs text-slate-400">Stay productive, stay focused</p>
+                <p className="text-xs text-slate-400">111Stay productive, stay focused</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -534,6 +534,29 @@ export function FullMode({
                   </AnimatePresence>
                 </div>
               )}
+
+              {/* Motivation Text */}
+              <motion.div 
+                className="text-center mt-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <Target className="w-5 h-5 text-emerald-400" />
+                  <Zap className="w-5 h-5 text-yellow-400" />
+                  <Star className="w-5 h-5 text-blue-400" />
+                </div>
+                <p className="text-lg font-bold text-white leading-relaxed">
+                  Nếu không hành động thì giấc mơ mãi mãi chỉ là giấc mơ...
+                </p>
+                <motion.div 
+                  className="w-24 h-0.5 bg-gradient-to-r from-emerald-400 via-yellow-400 to-blue-400 mx-auto mt-3 rounded-full"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                />
+              </motion.div>
             </div>
           </div>
         </CardContent>
