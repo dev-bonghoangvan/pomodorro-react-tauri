@@ -56,7 +56,6 @@ export function MiniMode({
   onYouTubeUrlChange,
 }: MiniModeProps) {
   const [showSettings, setShowSettings] = useState(false); // logical state (expanded)
-  const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
@@ -444,8 +443,6 @@ export function MiniMode({
           setQuoteSpeed={setQuoteSpeed}
           showQuotes={showQuotes}
           setShowQuotes={setShowQuotes}
-          isMuted={isMuted}
-          setIsMuted={setIsMuted}
           youtubeUrl={youtubeUrl}
           onYouTubeUrlChange={onYouTubeUrlChange}
           width="240px"

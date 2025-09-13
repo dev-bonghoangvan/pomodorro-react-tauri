@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Minus, MinusIcon, MoreVertical, Pause, Play, Plus, SkipForward, Timer, Volume2, VolumeX, X
+  Minus, MinusIcon, MoreVertical, Pause, Play, Plus, SkipForward, Timer, X
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -52,7 +52,6 @@ export function CompactMode({
   onAnimationComplete,
 }: CompactModeProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
@@ -498,50 +497,36 @@ export function CompactMode({
               </div>
             </div>
 
-            {/* Media */}
-    <div>
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                Media
-              </h3>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300 text-sm">Mute YouTube</span>
-                <button
-                  onClick={() => setIsMuted(!isMuted)}
-      className={`w-9 h-9 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center transition-colors ${isMuted ? 'ring-2 ring-emerald-500/60' : ''}`}
-      aria-pressed={isMuted}
-      aria-label="Toggle mute"
-                >
-                  {isMuted ? (
-                    <VolumeX className="h-4 w-4 text-white" />
-                  ) : (
-                    <Volume2 className="h-4 w-4 text-white" />
-                  )}
-                </button>
+            {/* YouTube URL */}
+            {onYouTubeUrlChange && (
+              <div>
+                <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+                  Media
+                </h3>
+                <div className="space-y-2">
+                  <label className="text-gray-300 text-xs font-semibold uppercase tracking-wide">YouTube URL</label>
+                  <input
+                    value={tempYoutube}
+                    onChange={e => setTempYoutube(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && onYouTubeUrlChange) { onYouTubeUrlChange(tempYoutube.trim()); } }}
+                    onBlur={() => { if (onYouTubeUrlChange) onYouTubeUrlChange(tempYoutube.trim()); }}
+                    placeholder="Paste YouTube link..."
+                    className="w-full px-3 py-2 rounded-md bg-gray-700/70 border border-gray-600 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/60"
+                  />
+                </div>
+                {/* Quotes toggle */}
+                <div className="mt-6 flex items-center justify-between">
+                  <span className="text-gray-300 text-sm">Show Quotes</span>
+                  <button
+                    onClick={() => setShowQuotes(q => !q)}
+                    className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${showQuotes ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
+                    aria-pressed={showQuotes}
+                  >
+                    {showQuotes ? 'ON' : 'OFF'}
+                  </button>
+                </div>
               </div>
-              {/* YouTube URL input */}
-              <div className="mt-4 space-y-2">
-                <label className="text-gray-300 text-xs font-semibold uppercase tracking-wide">YouTube URL</label>
-                <input
-                  value={tempYoutube}
-                  onChange={e => setTempYoutube(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && onYouTubeUrlChange) { onYouTubeUrlChange(tempYoutube.trim()); } }}
-                  onBlur={() => { if (onYouTubeUrlChange) onYouTubeUrlChange(tempYoutube.trim()); }}
-                  placeholder="Paste YouTube link..."
-                  className="w-full px-3 py-2 rounded-md bg-gray-700/70 border border-gray-600 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/60"
-                />
-              </div>
-              {/* Quotes toggle */}
-              <div className="mt-6 flex items-center justify-between">
-                <span className="text-gray-300 text-sm">Show Quotes</span>
-                <button
-                  onClick={() => setShowQuotes(q => !q)}
-                  className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${showQuotes ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
-                  aria-pressed={showQuotes}
-                >
-                  {showQuotes ? 'ON' : 'OFF'}
-                </button>
-              </div>
-            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

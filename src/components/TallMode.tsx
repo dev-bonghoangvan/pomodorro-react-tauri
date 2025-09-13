@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Clock, Coffee, Minus, MinusIcon, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Timer, Volume2, VolumeX, X
+    Clock, Coffee, Minus, MinusIcon, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Timer, X
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -58,7 +58,6 @@ export function TallMode({
   getYouTubeEmbedUrl,
 }: TallModeProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<number | null>(null);
@@ -547,25 +546,6 @@ export function TallMode({
               </div>
             </div>
 
-            {/* Media */}
-            <div>
-              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wide">
-                Media
-              </h3>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300 text-sm">Mute YouTube</span>
-                <button
-                  onClick={() => setIsMuted(!isMuted)}
-                  className="w-10 h-10 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center transition-colors"
-                >
-                  {isMuted ? (
-                    <VolumeX className="h-5 w-5 text-white" />
-                  ) : (
-                    <Volume2 className="h-5 w-5 text-white" />
-                  )}
-                </button>
-              </div>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

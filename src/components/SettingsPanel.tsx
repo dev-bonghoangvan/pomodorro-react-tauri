@@ -1,4 +1,4 @@
-import { Minus, Plus, X, ChevronDown, Volume2, VolumeX } from 'lucide-react';
+import { Minus, Plus, X, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { useEffect, useState } from 'react';
 
@@ -14,8 +14,6 @@ export interface SettingsPanelProps {
   setQuoteSpeed: (v: string) => void;
   showQuotes: boolean;
   setShowQuotes: (v: boolean) => void;
-  isMuted: boolean;
-  setIsMuted: (v: boolean) => void;
   youtubeUrl: string;
   onYouTubeUrlChange?: (url: string) => void;
   className?: string;
@@ -39,8 +37,6 @@ export function SettingsPanel({
   setQuoteSpeed,
   showQuotes,
   setShowQuotes,
-  isMuted,
-  setIsMuted,
   youtubeUrl,
   onYouTubeUrlChange,
   className = '',
@@ -144,17 +140,11 @@ export function SettingsPanel({
           </div>
         </div>
 
-        {/* Media */}
-        <div>
-          <h3 className="text-gray-300 font-semibold mb-2">Media</h3>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400">Mute YouTube</span>
-            <button onClick={() => setIsMuted(!isMuted)} className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center">
-              {isMuted ? <VolumeX className="h-4 w-4 text-white" /> : <Volume2 className="h-4 w-4 text-white" />}
-            </button>
-          </div>
-          {onYouTubeUrlChange && (
-            <div className="mt-4 space-y-1">
+        {/* YouTube URL */}
+        {onYouTubeUrlChange && (
+          <div>
+            <h3 className="text-gray-300 font-semibold mb-2">Media</h3>
+            <div className="space-y-1">
               <label className="text-gray-400 text-[10px] font-medium block">YouTube URL</label>
               <Input
                 value={youtubeInput}
@@ -166,8 +156,8 @@ export function SettingsPanel({
               />
               <p className="text-[10px] text-gray-500 leading-tight">Enter / blur để áp dụng.</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

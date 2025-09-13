@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    ChevronDown, Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, Volume2, VolumeX, X
+    Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, X
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -40,6 +40,9 @@ interface FullModeProps {
   onTimeEdit: (type: string) => void;
   onTimeSave: () => void;
   onTempTimeChange: (time: string) => void;
+  onWorkTimeChange: (value: number) => void;
+  onShortBreakTimeChange: (value: number) => void;
+  onLongBreakTimeChange: (value: number) => void;
   getProgress: () => number;
   formatTime: (seconds: number) => string;
   getTabIcon: (tab: string) => JSX.Element;
@@ -67,15 +70,17 @@ export function FullMode({
   onTimeEdit,
   onTimeSave,
   onTempTimeChange,
+  onWorkTimeChange,
+  onShortBreakTimeChange,
+  onLongBreakTimeChange,
   getProgress,
   formatTime,
   getTabIcon,
   getYouTubeEmbedUrl,
 }: FullModeProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
-  const [quoteSpeed, setQuoteSpeed] = useState("Normal");
+  const [showQuotes, setShowQuotes] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -98,15 +103,17 @@ export function FullMode({
     return next;
   };
 
-  // Auto-rotate quotes every 4 seconds
+  // Auto-rotate quotes every 6 seconds (increased from 4)
   useEffect(() => {
+    if (!showQuotes) return;
+    
     const interval = setInterval(() => {
       setCurrentQuoteIndex(getRandomQuote());
       setAnimationKey(prev => prev + 1);
-    }, 4000); // 4 seconds per quote
+    }, 6000); // 6 seconds per quote
 
     return () => clearInterval(interval);
-  }, [currentQuoteIndex]);
+  }, [currentQuoteIndex, showQuotes]);
 
   // Handle hover with delay (like CompactMode)
   const handleMouseEnter = () => {
@@ -475,44 +482,46 @@ export function FullMode({
               </div>
 
               {/* Quotes */}
-              <div className="text-center w-full">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={`${getCurrentQuote().en}-${getCurrentQuote().vi}-${animationKey}`}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="space-y-3"
-                  >
-                    <motion.p 
-                      className="text-base text-emerald-400 font-medium italic leading-relaxed"
-                      initial={{ opacity: 0, y: 10 }}
+              {showQuotes && (
+                <div className="text-center w-full">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={`${getCurrentQuote().en}-${getCurrentQuote().vi}-${animationKey}`}
+                      initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.25, delay: 0.05 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="space-y-3"
                     >
-                      "{getCurrentQuote().en}"
-                    </motion.p>
-                    <motion.p 
-                      className="text-base text-blue-400 font-medium italic leading-relaxed"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.25, delay: 0.1 }}
-                    >
-                      "{getCurrentQuote().vi}"
-                    </motion.p>
-                    <motion.div 
-                      className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent"
-                      initial={{ opacity: 0, scaleX: 0 }}
-                      animate={{ opacity: 1, scaleX: 1 }}
-                      exit={{ opacity: 0, scaleX: 0 }}
-                      transition={{ duration: 0.2, delay: 0.15 }}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                      <motion.p 
+                        className="text-base text-emerald-400 font-medium italic leading-relaxed"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25, delay: 0.05 }}
+                      >
+                        "{getCurrentQuote().en}"
+                      </motion.p>
+                      <motion.p 
+                        className="text-base text-blue-400 font-medium italic leading-relaxed"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25, delay: 0.1 }}
+                      >
+                        "{getCurrentQuote().vi}"
+                      </motion.p>
+                      <motion.div 
+                        className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent"
+                        initial={{ opacity: 0, scaleX: 0 }}
+                        animate={{ opacity: 1, scaleX: 1 }}
+                        exit={{ opacity: 0, scaleX: 0 }}
+                        transition={{ duration: 0.2, delay: 0.15 }}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -584,42 +593,80 @@ export function FullMode({
                   <span className="text-gray-300 text-sm">Focus</span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onTimeEdit("focus")}
-                      className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      onClick={() =>
+                        onWorkTimeChange(Math.max(1, customTimes.focus - 1))
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease focus time"
                     >
-                      Edit
+                      -1m
                     </button>
                     <span className="text-white font-mono w-12 text-center">
                       {customTimes.focus}m
                     </span>
+                    <button
+                      onClick={() => onWorkTimeChange(customTimes.focus + 1)}
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase focus time"
+                    >
+                      +1m
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Short Break</span>
+                  <span className="text-gray-300 text-sm">Short</span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onTimeEdit("shortBreak")}
-                      className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      onClick={() =>
+                        onShortBreakTimeChange(
+                          Math.max(1, customTimes.shortBreak - 1)
+                        )
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease short break"
                     >
-                      Edit
+                      -1m
                     </button>
                     <span className="text-white font-mono w-12 text-center">
                       {customTimes.shortBreak}m
                     </span>
+                    <button
+                      onClick={() =>
+                        onShortBreakTimeChange(customTimes.shortBreak + 1)
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase short break"
+                    >
+                      +1m
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Long Break</span>
+                  <span className="text-gray-300 text-sm">Long</span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onTimeEdit("longBreak")}
-                      className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      onClick={() =>
+                        onLongBreakTimeChange(
+                          Math.max(1, customTimes.longBreak - 1)
+                        )
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Decrease long break"
                     >
-                      Edit
+                      -1m
                     </button>
                     <span className="text-white font-mono w-12 text-center">
                       {customTimes.longBreak}m
                     </span>
+                    <button
+                      onClick={() =>
+                        onLongBreakTimeChange(customTimes.longBreak + 1)
+                      }
+                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs focus:ring-2 focus:ring-emerald-500/60 focus:outline-none"
+                      aria-label="Increase long break"
+                    >
+                      +1m
+                    </button>
                   </div>
                 </div>
               </div>
@@ -631,35 +678,17 @@ export function FullMode({
                 Quotes
               </h3>
               <div className="flex items-center justify-between">
-                <span className="text-gray-300 text-sm">Speed</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-white text-sm">{quoteSpeed}</span>
-                  <button className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center">
-                    <ChevronDown className="h-3 w-3 text-white" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Media */}
-            <div>
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
-                Media
-              </h3>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300 text-sm">Mute YouTube</span>
+                <span className="text-gray-300 text-sm">Show Quotes</span>
                 <button
-                  onClick={() => setIsMuted(!isMuted)}
-                  className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                  onClick={() => setShowQuotes(!showQuotes)}
+                  className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${showQuotes ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
+                  aria-pressed={showQuotes}
                 >
-                  {isMuted ? (
-                    <VolumeX className="h-4 w-4 text-white" />
-                  ) : (
-                    <Volume2 className="h-4 w-4 text-white" />
-                  )}
+                  {showQuotes ? 'ON' : 'OFF'}
                 </button>
               </div>
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>

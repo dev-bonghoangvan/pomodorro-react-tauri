@@ -48,7 +48,6 @@ export function SmallMode({
   onYouTubeUrlChange,
 }: SmallModeProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [roundsPerCycle, setRoundsPerCycle] = useState(4);
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
@@ -500,8 +499,6 @@ export function SmallMode({
               setQuoteSpeed={setQuoteSpeed}
               showQuotes={showQuotes}
               setShowQuotes={setShowQuotes}
-              isMuted={isMuted}
-              setIsMuted={setIsMuted}
               youtubeUrl={youtubeUrl}
               onYouTubeUrlChange={onYouTubeUrlChange}
               width="220px"

@@ -442,6 +442,15 @@ function AppContent() {
               onTimeEdit={handleTimeEdit}
               onTimeSave={handleTimeSave}
               onTempTimeChange={setTempTime}
+              onWorkTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, focus: value }))
+              }
+              onShortBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
+              }
+              onLongBreakTimeChange={(value) =>
+                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
+              }
               getProgress={getProgress}
               formatTime={formatTime}
               getTabIcon={getTabIcon}
