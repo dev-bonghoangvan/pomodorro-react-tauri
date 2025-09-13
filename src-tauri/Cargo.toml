@@ -1,7 +1,7 @@
 [package]
-name = "pomodoro-tauri-pixi"
+name = "pomodoro-tauri-spotify"
 version = "0.1.0"
-description = "Pomodoro app (Tauri + Pixi)"
+description = "Pomodoro vibe spotify"
 authors = ["You"]
 edition = "2021"
 rust-version = "1.70"
