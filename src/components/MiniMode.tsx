@@ -83,7 +83,7 @@ export function MiniMode({
   const thumbnailRef = useRef<HTMLDivElement>(null);
   // (SettingsPanel will manage temporary YouTube input state)
 
-  // Calculate animation duration based on actual UI dimensions
+  // Calculate animation duration based on actual UI dimensions - only when quote changes
   useEffect(() => {
     const calculateDuration = () => {
       if (containerRef.current && thumbnailRef.current) {
@@ -161,16 +161,24 @@ export function MiniMode({
     // Use setTimeout to ensure DOM is ready
     const timeoutId = setTimeout(calculateDuration, 100);
 
-    const handleResize = () => {
-      setTimeout(calculateDuration, 100);
-    };
-    window.addEventListener("resize", handleResize);
-
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener("resize", handleResize);
     };
   }, [currentQuote]);
+
+  // Separate effect for YouTube position updates on hover - doesn't affect quotes animation
+  useEffect(() => {
+    // Force YouTube position update when hover state changes (both hover in and hover out)
+    const timeouts = [
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 50),
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 150),
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 300),
+    ];
+
+    return () => {
+      timeouts.forEach(timeout => clearTimeout(timeout));
+    };
+  }, [isHovered]);
 
   // Check if both quotes are complete - wait for Vietnamese quote (which has delay)
   useEffect(() => {
@@ -195,29 +203,12 @@ export function MiniMode({
       hoverTimeoutRef.current = null;
     }
     setIsHovered(true);
-    
-    // Force YouTube position update when hover state changes
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 50);
   };
 
   const handleMouseLeave = () => {
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
     }, 2000); // 2 seconds delay
-    
-    // Force YouTube position update immediately when mouse leaves
-    // This prevents the "jumping" effect
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 10);
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 50);
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 100);
   };
 
   // Cleanup timeout on unmount
@@ -229,19 +220,6 @@ export function MiniMode({
     };
   }, []);
 
-  // Trigger YouTube position update when hover state changes
-  useEffect(() => {
-    // Multiple triggers to ensure position updates correctly
-    const timeouts = [
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 50),
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 150),
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 300),
-    ];
-
-    return () => {
-      timeouts.forEach(timeout => clearTimeout(timeout));
-    };
-  }, [isHovered]);
 
   // NOTE: Removed auto-sync that opened settings when width > collapsed.
   // Keep settings closed by default; only user interaction (button) toggles it.
@@ -438,33 +416,42 @@ export function MiniMode({
           </div>
         </div>
       </div>
-      {showSettings && (
-        <SettingsPanel
-          onClose={async () => {
-            setShowSettings(false);
-            await toggleExpand("right");
-          }}
-          roundsPerCycle={roundsPerCycle}
-          setRoundsPerCycle={setRoundsPerCycle}
-          customTimes={customTimes}
-          onWorkTimeChange={onWorkTimeChange}
-          onShortBreakTimeChange={onShortBreakTimeChange}
-          onLongBreakTimeChange={onLongBreakTimeChange}
-          quoteSpeed={quoteSpeed}
-          setQuoteSpeed={setQuoteSpeed}
-          showQuotes={showQuotes}
-          setShowQuotes={setShowQuotes}
-          autoStartNext={autoStartNext}
-          setAutoStartNext={setAutoStartNext}
-          autoStartBreakType={autoStartBreakType}
-          setAutoStartBreakType={setAutoStartBreakType}
-          youtubeUrl={youtubeUrl}
-          onYouTubeUrlChange={onYouTubeUrlChange}
-          width="240px"
-          height="100%"
-          className="absolute inset-y-0 right-0"
-        />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute inset-y-0 right-0 z-50"
+          >
+            <SettingsPanel
+              onClose={async () => {
+                setShowSettings(false);
+                await toggleExpand("right");
+              }}
+              roundsPerCycle={roundsPerCycle}
+              setRoundsPerCycle={setRoundsPerCycle}
+              customTimes={customTimes}
+              onWorkTimeChange={onWorkTimeChange}
+              onShortBreakTimeChange={onShortBreakTimeChange}
+              onLongBreakTimeChange={onLongBreakTimeChange}
+              quoteSpeed={quoteSpeed}
+              setQuoteSpeed={setQuoteSpeed}
+              showQuotes={showQuotes}
+              setShowQuotes={setShowQuotes}
+              autoStartNext={autoStartNext}
+              setAutoStartNext={setAutoStartNext}
+              autoStartBreakType={autoStartBreakType}
+              setAutoStartBreakType={setAutoStartBreakType}
+              youtubeUrl={youtubeUrl}
+              onYouTubeUrlChange={onYouTubeUrlChange}
+              width="240px"
+              height="100%"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
