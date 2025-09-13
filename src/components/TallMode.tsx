@@ -7,7 +7,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
 import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { YouTubeAnchor } from '../player/YouTubeOverlay';
 import quotesData from '../quotes/quotes.json';

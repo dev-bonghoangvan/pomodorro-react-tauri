@@ -6,17 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import { invoke } from '@tauri-apps/api/core';
 
-// @ts-ignore
-import USAFlag from '../svgs/usa.svg';
-// @ts-ignore
-import VietnamFlag from '../svgs/vietnam.svg';
 import quotesData from '../quotes/quotes.json';
 import { YouTubeAnchor } from '../player/YouTubeOverlay';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import SettingsPanel from './SettingsPanel';
 
