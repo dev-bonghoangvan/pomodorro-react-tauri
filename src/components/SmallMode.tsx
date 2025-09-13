@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { MoreVertical, Pause, Play, SkipForward, X } from "lucide-react";
+import { MinusIcon, MoreVertical, Pause, Play, SkipForward, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { invoke } from "@tauri-apps/api/core";
@@ -68,15 +68,14 @@ export function SmallMode({
   // Calculate animation duration based on actual UI dimensions
   useEffect(() => {
     const calculateDuration = () => {
-      if (containerRef.current && thumbnailRef.current) {
+      if (containerRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
-        const thumbnailRect = thumbnailRef.current.getBoundingClientRect();
 
         const tempDiv = document.createElement("div");
         tempDiv.style.position = "absolute";
         tempDiv.style.visibility = "hidden";
         tempDiv.style.whiteSpace = "nowrap";
-        tempDiv.style.fontSize = "14px"; // text-sm for small mode
+        tempDiv.style.fontSize = "12px"; // text-xs for small mode
         tempDiv.style.fontFamily = "inherit";
         tempDiv.style.fontWeight = "500";
         tempDiv.style.fontStyle = "italic";
@@ -100,6 +99,7 @@ export function SmallMode({
         const targetPercentage = (maxTextWidth / availableWidth) * 100 + 100;
         setAnimationTarget(`-${targetPercentage}%`);
 
+        // Reset animation state
         setIsAnimationComplete(false);
         setEnglishComplete(false);
         setVietnameseComplete(false);
@@ -112,7 +112,11 @@ export function SmallMode({
     const timeoutId = setTimeout(calculateDuration, 100);
 
     const handleResize = () => {
-      setTimeout(calculateDuration, 100);
+      // Reset animation state immediately on resize
+      setIsAnimationComplete(false);
+      setEnglishComplete(false);
+      setVietnameseComplete(false);
+      setTimeout(calculateDuration, 150);
     };
     window.addEventListener("resize", handleResize);
 
@@ -167,6 +171,10 @@ export function SmallMode({
   useEffect(() => {
     const handleResize = () => {
       setWindowHeight(window.innerHeight);
+      // Reset animation state when window height changes
+      setIsAnimationComplete(false);
+      setEnglishComplete(false);
+      setVietnameseComplete(false);
     };
 
     window.addEventListener('resize', handleResize);
@@ -189,6 +197,8 @@ export function SmallMode({
       setEnglishComplete(false);
       setVietnameseComplete(false);
       setIsAnimationComplete(false);
+      // Trigger animation restart
+      setAnimationKey(prev => prev + 1);
     }
   }, [showQuotes, windowHeight]);
 
@@ -280,20 +290,36 @@ export function SmallMode({
                 ></div>
               </div>
               <div className="flex-1 h-full" data-tauri-drag-region></div>
-              <button
-                onClick={async () => {
-                  try {
-                    await invoke("close_window");
-                  } catch (error) {
-                    console.error("Error closing window:", error);
-                  }
-                }}
-                className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
-                aria-label="Close window"
-                data-tauri-drag-region="false"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      await invoke("minimize_window");
+                    } catch (error) {
+                      console.error("Error minimizing window:", error);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
+                  aria-label="Minimize window"
+                  data-tauri-drag-region="false"
+                >
+                  <MinusIcon className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await invoke("close_window");
+                    } catch (error) {
+                      console.error("Error closing window:", error);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
+                  aria-label="Close window"
+                  data-tauri-drag-region="false"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -458,7 +484,7 @@ export function SmallMode({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute inset-y-0 right-0 z-50"
+            className="absolute inset-y-0 right-0 z-[1001]"
           >
             <SettingsPanel
               onClose={() => {

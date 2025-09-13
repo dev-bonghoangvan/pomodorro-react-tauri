@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Clock, Coffee, Minus, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Timer, Volume2, VolumeX, X
+    Clock, Coffee, Minus, MinusIcon, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Timer, Volume2, VolumeX, X
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -163,20 +163,36 @@ export function TallMode({
                 <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
               </div>
               <div className="flex-1 h-full" data-tauri-drag-region></div>
-              <button
-                onClick={async () => {
-                  try {
-                    await invoke('close_window');
-                  } catch (error) {
-                    console.error('Error closing window:', error);
-                  }
-                }}
-                className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
-                aria-label="Close window"
-                data-tauri-drag-region="false"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      await invoke('minimize_window');
+                    } catch (error) {
+                      console.error('Error minimizing window:', error);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
+                  aria-label="Minimize window"
+                  data-tauri-drag-region="false"
+                >
+                  <MinusIcon className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await invoke('close_window');
+                    } catch (error) {
+                      console.error('Error closing window:', error);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
+                  aria-label="Close window"
+                  data-tauri-drag-region="false"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -191,7 +207,7 @@ export function TallMode({
               <Timer className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Let's Focus</h1>
+              <h1 className="text-lg font-bold text-white" style={{ color: "#1DB954" }}>Let's Focus To Your Dreams</h1>
               <p className="text-xs text-slate-400">Stay productive, stay focused</p>
             </div>
           </div>

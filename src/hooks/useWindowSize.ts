@@ -32,8 +32,12 @@ function pickMode(width: number, height: number, prev?: DisplayMode): DisplayMod
   const ar = width / Math.max(1, height);
 
   // Ưu tiên width cho mini/compact, height + AR cho tall
-  if (width <= 340 + (prev === "mini" ? HYSTERESIS : 0) || height <= 100 + (prev === "mini" ? HYSTERESIS : 0)) {
+  if (height <100 && width <= 340 + (prev === "mini" ? HYSTERESIS : 0) || height <= 100 + (prev === "mini" ? HYSTERESIS : 0)) {
     return "mini";
+  }
+  // Nếu width < 250px thì force small mode
+  if (width < 330) {
+    return "small";
   }
   if (width <= 480 + (prev === "small" ? HYSTERESIS : 0) && height <= 260 + (prev === "small" ? HYSTERESIS : 0)) {
     return "small";

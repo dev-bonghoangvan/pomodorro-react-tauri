@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    ChevronDown, Headphones, Maximize2, Minimize2, Minus, MoreVertical, Play, Plus, Settings, Volume2, VolumeX, X
+    ChevronDown, Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, Volume2, VolumeX, X
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -178,20 +178,36 @@ export function FullMode({
                 <div className="w-2.5 h-2.5 rounded-full bg-gray-500" data-tauri-drag-region></div>
               </div>
               <div className="flex-1 h-full" data-tauri-drag-region></div>
-              <button
-                onClick={async () => {
-                  try {
-                    await invoke('close_window');
-                  } catch (error) {
-                    console.error('Error closing window:', error);
-                  }
-                }}
-                className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
-                aria-label="Close window"
-                data-tauri-drag-region="false"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      await invoke('minimize_window');
+                    } catch (error) {
+                      console.error('Error minimizing window:', error);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
+                  aria-label="Minimize window"
+                  data-tauri-drag-region="false"
+                >
+                  <MinusIcon className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await invoke('close_window');
+                    } catch (error) {
+                      console.error('Error closing window:', error);
+                    }
+                  }}
+                  className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
+                  aria-label="Close window"
+                  data-tauri-drag-region="false"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -202,10 +218,13 @@ export function FullMode({
         <CardHeader className="pb-4 pt-10">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
-              <span className="text-xl font-bold" style={{ color: "#1DB954" }}>
-                Pomodoro Timer Vibe Spotify
-              </span>
-              <span className="text-sm text-gray-400">v1.0</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+                <Timer className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white" style={{ color: "#1DB954" }}>Let's Focus To Your Dreams</h1>
+                <p className="text-xs text-slate-400">Stay productive, stay focused</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -215,7 +234,7 @@ export function FullMode({
                 }}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-gray-300 hover:text-white z-[70] relative"
+                className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50 z-[70] relative"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>

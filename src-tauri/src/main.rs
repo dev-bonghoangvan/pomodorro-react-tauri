@@ -62,13 +62,20 @@ fn close_window(app: AppHandle) -> Result<(), String> {
   window.close().map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn minimize_window(app: AppHandle) -> Result<(), String> {
+  let window = app.get_webview_window("main").ok_or("Window not found")?;
+  window.minimize().map_err(|e| e.to_string())
+}
+
 fn main() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
       set_always_on_top,
       set_autostart,
       is_autostart_enabled,
-      close_window
+      close_window,
+      minimize_window
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

@@ -59,7 +59,7 @@ export function SettingsPanel({
 
   return (
     <div 
-      className={`bg-gray-800 border-l border-gray-600 p-4 flex flex-col overflow-y-auto overflow-x-hidden text-xs ${className}`}
+      className={`bg-gray-800 border-l border-gray-600 p-4 flex flex-col overflow-y-auto overflow-x-hidden text-xs relative z-[101] ${className}`}
       style={{ width, height }}
     >      
       <div className="flex items-center justify-between mb-4 select-none">
