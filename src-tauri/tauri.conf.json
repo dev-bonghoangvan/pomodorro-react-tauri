@@ -1,7 +1,7 @@
 {
-  "productName": "Pomodoro Tauri Pixi",
+  "productName": "Pomodoro vibe spotify",
   "version": "0.1.0",
-  "identifier": "com.example.pomodoro_tauri_pixi",
+  "identifier": "com.example.pomodoro-tauri-spotify",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
@@ -34,13 +34,15 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": ["nsis"],
+    "icon": [
+      "icons/icon.ico"
+    ],
     "windows": {
       "webviewInstallMode": {
         "type": "embedBootstrapper"
       }
     }
-
   },
   "plugins": {}
 }

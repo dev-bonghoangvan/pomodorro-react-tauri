@@ -16,7 +16,7 @@ fn is_autostart_enabled() -> Result<bool, String> {
   let hkcu = RegKey::predef(HKEY_CURRENT_USER);
   let path = r"Software\Microsoft\Windows\CurrentVersion\Run";
   if let Ok(key) = hkcu.open_subkey_with_flags(path, KEY_READ) {
-    let val: Result<String, _> = key.get_value("PomodoroTauri");
+    let val: Result<String, _> = key.get_value("PomodoroVibeSpotify");
     return Ok(val.is_ok());
   }
   Ok(false)
@@ -43,9 +43,9 @@ fn set_autostart(enable: bool) -> Result<(), String> {
   let (key, _) = hkcu.create_subkey(path).map_err(|e| e.to_string())?;
 
   if enable {
-    key.set_value("PomodoroTauri", &exe_str).map_err(|e| e.to_string())?;
+    key.set_value("PomodoroVibeSpotify", &exe_str).map_err(|e| e.to_string())?;
   } else {
-    let _ = key.delete_value("PomodoroTauri");
+    let _ = key.delete_value("PomodoroVibeSpotify");
   }
   Ok(())
 }

@@ -1,6 +1,7 @@
 import { Minus, Plus, X, ChevronDown } from 'lucide-react';
 import { Input } from '../ui/input';
 import { useEffect, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
 export interface SettingsPanelProps {
   onClose: () => void;
@@ -52,7 +53,26 @@ export function SettingsPanel({
   height = '100%'
 }: SettingsPanelProps) {
   const [youtubeInput, setYoutubeInput] = useState(youtubeUrl);
+  const [autoStartWindows, setAutoStartWindows] = useState(false);
+  
   useEffect(() => { setYoutubeInput(youtubeUrl); }, [youtubeUrl]);
+  
+  // Load auto-start status on mount
+  useEffect(() => {
+    invoke('is_autostart_enabled')
+      .then((enabled) => setAutoStartWindows(enabled as boolean))
+      .catch(console.error);
+  }, []);
+  
+  // Handle auto-start toggle
+  const handleAutoStartToggle = async (enabled: boolean) => {
+    try {
+      await invoke('set_autostart', { enable: enabled });
+      setAutoStartWindows(enabled);
+    } catch (error) {
+      console.error('Failed to set autostart:', error);
+    }
+  };
 
   const commitYouTube = () => {
     const trimmed = youtubeInput.trim();
@@ -211,6 +231,20 @@ export function SettingsPanel({
             </div>
           </div>
         )}
+
+        {/* Start with Windows */}
+        <div>
+          <h3 className="text-gray-300 font-semibold mb-2">Start with Windows</h3>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400">Launch app on Windows startup</span>
+            <button
+              onClick={() => handleAutoStartToggle(!autoStartWindows)}
+              className={`px-3 h-6 rounded text-xs font-medium transition-colors ${autoStartWindows ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-200'}`}
+            >
+              {autoStartWindows ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

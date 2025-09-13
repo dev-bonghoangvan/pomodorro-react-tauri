@@ -2351,7 +2351,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pomodoro-tauri-pixi"
+name = "pomodoro-tauri-spotify"
 version = "0.1.0"
 dependencies = [
  "cfg-if",
