@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Minimize2, Minus, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Volume2, VolumeX, X
+    Clock, Coffee, Minus, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Timer, Volume2, VolumeX, X
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -10,6 +10,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { YouTubeAnchor } from '../player/YouTubeOverlay';
+import quotesData from '../quotes/quotes.json';
 
 interface TallModeProps {
   timeLeft: number;
@@ -21,7 +22,7 @@ interface TallModeProps {
   onReset: () => void;
   onMinimize: () => void;
   onSettings: () => void;
-  currentQuote: string;
+  currentQuote: { en: string; vi: string };
   isVietnamese: boolean;
   workTime: number;
   shortBreakTime: number;
@@ -62,6 +63,7 @@ export function TallMode({
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const [localQuoteIndex, setLocalQuoteIndex] = useState(0);
 
   // Handle hover with delay (like CompactMode)
   const handleMouseEnter = () => {
@@ -85,6 +87,15 @@ export function TallMode({
         clearTimeout(hoverTimeoutRef.current);
       }
     };
+  }, []);
+
+  // Change quotes every 6 seconds
+  useEffect(() => {
+    const quoteInterval = setInterval(() => {
+      setLocalQuoteIndex((prev) => (prev + 1) % quotesData.length);
+    }, 6000);
+
+    return () => clearInterval(quoteInterval);
   }, []);
 
 
@@ -171,224 +182,234 @@ export function TallMode({
         )}
       </AnimatePresence>
    
-      {/* Main TallMode Interface */}
-      <Card className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-gray-600 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800">
-        <CardContent className="p-4 pt-10 h-full flex flex-col space-y-4">
-          {/* Header with utility icons */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold text-white">Pomodoro (tall mode)</span>
+      {/* Main TallMode Interface - Vertical Layout */}
+      <div className="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+        {/* Header Section - Add padding for drag area */}
+        <div className="flex justify-between items-center p-4 pt-8 border-b border-slate-700/50">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+              <Timer className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setShowSettings(!showSettings)}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-gray-300 hover:text-white"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMinimize}
-                className="h-8 w-8 p-0 text-gray-300 hover:text-white"
-              >
-                <Minimize2 className="h-4 w-4" />
-              </Button>
+            <div>
+              <h1 className="text-lg font-bold text-white">Let's Focus</h1>
+              <p className="text-xs text-slate-400">Stay productive, stay focused</p>
             </div>
           </div>
+          <Button
+            onClick={() => setShowSettings(!showSettings)}
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </div>
 
-           {/* YouTube Section - Always at top */}
-           <motion.div
-             className="w-full"
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.5 }}
-           >
-             <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-700">
-               <YouTubeAnchor className="w-full h-full" />
-             </div>
-           </motion.div>
+        {/* YouTube Section - Larger */}
+        <motion.div
+          className="px-4 py-3"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="w-full h-40 rounded-xl overflow-hidden bg-slate-800/50 border border-slate-700/50">
+            <YouTubeAnchor className="w-full h-full" />
+          </div>
+        </motion.div>
 
-          {/* Main Content - Responsive Layout */}
-          <div className="flex-1 flex flex-col xl:flex-row gap-4">
-            {/* Left Side - Timer and Controls */}
-            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-              {/* Tabs */}
-              <Tabs value={currentTab} onValueChange={onTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-700/50 border border-gray-600">
-                  <TabsTrigger
-                    value="focus"
-                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                      <span className="text-xs font-medium">Focus</span>
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="shortBreak"
-                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      <span className="text-xs font-medium">Short</span>
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="longBreak"
-                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 data-[state=inactive]:hover:text-white"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <span className="text-xs font-medium">Long</span>
-                    </div>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              {/* Timer Display */}
-              <div className="relative w-32 h-32">
-                <svg
-                  className="w-full h-full transform -rotate-90"
-                  viewBox="0 0 100 100"
+        {/* Main Content - Vertical Stack */}
+        <div className="flex-1 flex flex-col px-4 py-2 space-y-4 mt-3">
+          {/* Mode Tabs - Horizontal */}
+          <div className="flex justify-center">
+            <Tabs value={currentTab} onValueChange={onTabChange} className="w-full max-w-lg">
+              <TabsList className="grid w-full grid-cols-3 p-2 gap-2 rounded-2xl border-0 outline-none">
+                <TabsTrigger
+                  value="focus"
+                  className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white data-[state=active]:shadow-xl data-[state=active]:scale-105 data-[state=inactive]:bg-slate-800/20 data-[state=inactive]:text-slate-400 data-[state=inactive]:opacity-60 data-[state=inactive]:border-0 data-[state=inactive]:hover:text-slate-300 data-[state=inactive]:hover:opacity-80 data-[state=inactive]:hover:bg-slate-700/30 transition-all duration-200 rounded-xl"
                 >
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="rgba(255,255,255,0.1)"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <motion.circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="url(#gradient)"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${
-                      2 * Math.PI * 40 * (1 - getProgress() / 100)
-                    }`}
-                    initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                    animate={{
-                      strokeDashoffset:
-                        2 * Math.PI * 40 * (1 - getProgress() / 100),
-                    }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                  />
-                  <defs>
-                    <linearGradient
-                      id="gradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#059669" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-semibold">Focus</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="shortBreak"
+                  className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white data-[state=active]:shadow-xl data-[state=active]:scale-105 data-[state=inactive]:bg-slate-800/20 data-[state=inactive]:text-slate-400 data-[state=inactive]:opacity-60 data-[state=inactive]:border-0 data-[state=inactive]:hover:text-slate-300 data-[state=inactive]:hover:opacity-80 data-[state=inactive]:hover:bg-slate-700/30 transition-all duration-200 rounded-xl"
+                >
+                  <div className="flex items-center gap-2">
+                    <Coffee className="w-4 h-4" />
+                    <span className="font-semibold">Short</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="longBreak"
+                  className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white data-[state=active]:shadow-xl data-[state=active]:scale-105 data-[state=inactive]:bg-slate-800/20 data-[state=inactive]:text-slate-400 data-[state=inactive]:opacity-60 data-[state=inactive]:border-0 data-[state=inactive]:hover:text-slate-300 data-[state=inactive]:hover:opacity-80 data-[state=inactive]:hover:bg-slate-700/30 transition-all duration-200 rounded-xl"
+                >
+                  <div className="flex items-center gap-2">
+                    <Coffee className="w-4 h-4" />
+                    <span className="font-semibold">Long</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-                {/* Time Display */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div
-                    key={timeLeft}
-                    initial={{ scale: 1.1, opacity: 0.8 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-2xl font-mono font-bold text-white"
-                  >
-                    {formatTime(timeLeft)}
-                  </motion.div>
+          {/* Timer Section - Large and Centered */}
+          <div className="flex flex-col items-center justify-center space-y-1 py-4">
+            {/* Timer Circle */}
+            <div className="relative w-40 h-40">
+              <svg
+                className="w-full h-full transform -rotate-90"
+                viewBox="0 0 100 100"
+              >
+                {/* Background Circle */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  stroke="rgba(255,255,255,0.1)"
+                  strokeWidth="3"
+                  fill="none"
+                />
+                {/* Progress Circle */}
+                <motion.circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  stroke="url(#timerGradient)"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 45}`}
+                  initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
+                  animate={{
+                    strokeDashoffset: 2 * Math.PI * 45 * (1 - getProgress() / 100),
+                  }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                />
+                <defs>
+                  <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="50%" stopColor="#059669" />
+                    <stop offset="100%" stopColor="#047857" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              {/* Time Display */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <motion.div
+                  key={timeLeft}
+                  initial={{ scale: 1.1, opacity: 0.8 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-3xl font-mono font-bold text-white mb-1"
+                >
+                  {formatTime(timeLeft)}
+                </motion.div>
+                <div className="text-sm text-slate-400 font-medium">
+                  {currentTab === 'focus' ? 'Focus Time' : currentTab === 'shortBreak' ? 'Short Break' : 'Long Break'}
                 </div>
               </div>
-
-              {/* Controls */}
-              <div className="flex justify-center gap-3">
-                <Button
-                  onClick={onPlayPause}
-                  className="h-12 w-12 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg transition-all duration-150 hover:scale-105 active:scale-95"
-                >
-                  {isRunning ? (
-                    <Pause className="h-5 w-5" />
-                  ) : (
-                    <Play className="h-5 w-5 ml-1" />
-                  )}
-                </Button>
-
-                <Button
-                  onClick={onSkip}
-                  variant="ghost"
-                  className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg transition-all duration-150 hover:scale-105 active:scale-95"
-                >
-                  <SkipForward className="h-5 w-5" />
-                </Button>
-
-                <Button
-                  onClick={onReset}
-                  variant="ghost"
-                  className="h-12 w-12 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg transition-all duration-150 hover:scale-105 active:scale-95"
-                >
-                  <RotateCcw className="h-5 w-5" />
-                </Button>
-              </div>
             </div>
 
-            {/* Right Side - Quotes */}
-            <div className="flex-1 flex items-center justify-center">
-              <motion.div
-                className="text-center w-full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
+            {/* Control Buttons - Horizontal Row */}
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={onPlayPause}
+                className="h-12 w-12 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
               >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={currentQuote}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="space-y-3"
-                  >
-                    <p className="text-sm text-emerald-400 font-medium italic leading-relaxed">
-                      "{currentQuote}"
-                    </p>
-                    <p className="text-sm text-blue-400 font-medium italic leading-relaxed">
-                      "{currentQuote}"
-                    </p>
-                    <div className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
-                  </motion.div>
-                </AnimatePresence>
-              </motion.div>
+                {isRunning ? (
+                  <Pause className="h-5 w-5" />
+                ) : (
+                  <Play className="h-5 w-5 ml-0.5" />
+                )}
+              </Button>
+
+              <Button
+                onClick={onSkip}
+                variant="ghost"
+                className="h-12 w-12 rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-white shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <SkipForward className="h-5 w-5" />
+              </Button>
+
+              <Button
+                onClick={onReset}
+                variant="ghost"
+                className="h-12 w-12 rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-white shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </Button>
             </div>
+
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Quote Section - Separate section with more space */}
+          <motion.div
+            className="text-center py-4 flex-1 flex flex-col justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={`${quotesData[localQuoteIndex]?.en}-${quotesData[localQuoteIndex]?.vi}-${localQuoteIndex}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="space-y-3"
+              >
+                <motion.p 
+                  className="text-sm text-emerald-400 font-medium italic leading-relaxed px-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, delay: 0.05 }}
+                >
+                  "{quotesData[localQuoteIndex]?.en || 'Time is what we want most, but what we use worst.'}"
+                </motion.p>
+                <motion.p 
+                  className="text-sm text-blue-400 font-medium italic leading-relaxed px-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, delay: 0.1 }}
+                >
+                  "{quotesData[localQuoteIndex]?.vi || 'Thời gian là thứ chúng ta muốn nhất, nhưng lại sử dụng tệ nhất.'}"
+                </motion.p>
+                <motion.div 
+                  className="w-full h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent"
+                  initial={{ opacity: 0, scaleX: 0 }}
+                  animate={{ opacity: 1, scaleX: 1 }}
+                  exit={{ opacity: 0, scaleX: 0 }}
+                  transition={{ duration: 0.2, delay: 0.15 }}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </div>
 
       {/* Settings Panel Dropdown */}
       <AnimatePresence mode="wait" initial={false}>
         {showSettings && (
           <motion.div
-            initial={{ opacity: 0, y: -5 }}
+            ref={settingsRef}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-16 right-4 w-80 bg-slate-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 p-6 z-[1001]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Settings Header */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-600">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700/50">
               <h2 className="text-lg font-bold text-white">Settings</h2>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-6 h-6 rounded-full bg-gray-600 hover:bg-gray-500 flex items-center justify-center text-white"
+                className="w-6 h-6 rounded-full bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -396,31 +417,31 @@ export function TallMode({
 
             {/* Quick Settings */}
             <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wide">
                 Quick Settings
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">
+                  <span className="text-slate-300 text-sm">
                     Rounds per cycle
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() =>
                         setRoundsPerCycle(Math.max(1, roundsPerCycle - 1))
                       }
-                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                      className="w-8 h-8 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center transition-colors"
                     >
-                      <Minus className="h-3 w-3 text-white" />
+                      <Minus className="h-4 w-4 text-white" />
                     </button>
-                    <span className="text-white font-mono w-8 text-center">
+                    <span className="text-white font-mono w-8 text-center text-lg">
                       {roundsPerCycle}
                     </span>
                     <button
                       onClick={() => setRoundsPerCycle(roundsPerCycle + 1)}
-                      className="w-6 h-6 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                      className="w-8 h-8 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center transition-colors"
                     >
-                      <Plus className="h-3 w-3 text-white" />
+                      <Plus className="h-4 w-4 text-white" />
                     </button>
                   </div>
                 </div>
@@ -429,34 +450,34 @@ export function TallMode({
 
             {/* Durations */}
             <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wide">
                 Durations
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Focus</span>
+                  <span className="text-slate-300 text-sm">Focus</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() =>
                         onWorkTimeChange(Math.max(1, customTimes.focus - 1))
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
                     >
                       -1m
                     </button>
-                    <span className="text-white font-mono w-12 text-center">
+                    <span className="text-white font-mono w-12 text-center text-lg">
                       {customTimes.focus}m
                     </span>
                     <button
                       onClick={() => onWorkTimeChange(customTimes.focus + 1)}
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
                     >
                       +1m
                     </button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Short</span>
+                  <span className="text-slate-300 text-sm">Short Break</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() =>
@@ -464,25 +485,25 @@ export function TallMode({
                           Math.max(1, customTimes.shortBreak - 1)
                         )
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
                     >
                       -1m
                     </button>
-                    <span className="text-white font-mono w-12 text-center">
+                    <span className="text-white font-mono w-12 text-center text-lg">
                       {customTimes.shortBreak}m
                     </span>
                     <button
                       onClick={() =>
                         onShortBreakTimeChange(customTimes.shortBreak + 1)
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
                     >
                       +1m
                     </button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 text-sm">Long</span>
+                  <span className="text-slate-300 text-sm">Long Break</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() =>
@@ -490,18 +511,18 @@ export function TallMode({
                           Math.max(1, customTimes.longBreak - 1)
                         )
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
                     >
                       -1m
                     </button>
-                    <span className="text-white font-mono w-12 text-center">
+                    <span className="text-white font-mono w-12 text-center text-lg">
                       {customTimes.longBreak}m
                     </span>
                     <button
                       onClick={() =>
                         onLongBreakTimeChange(customTimes.longBreak + 1)
                       }
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-white text-xs"
+                      className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg text-white text-xs font-medium transition-colors"
                     >
                       +1m
                     </button>
@@ -512,19 +533,19 @@ export function TallMode({
 
             {/* Media */}
             <div>
-              <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">
+              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wide">
                 Media
               </h3>
               <div className="flex items-center justify-between">
-                <span className="text-gray-300 text-sm">Mute YouTube</span>
+                <span className="text-slate-300 text-sm">Mute YouTube</span>
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="w-8 h-8 rounded bg-gray-600 hover:bg-gray-500 flex items-center justify-center"
+                  className="w-10 h-10 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 flex items-center justify-center transition-colors"
                 >
                   {isMuted ? (
-                    <VolumeX className="h-4 w-4 text-white" />
+                    <VolumeX className="h-5 w-5 text-white" />
                   ) : (
-                    <Volume2 className="h-4 w-4 text-white" />
+                    <Volume2 className="h-5 w-5 text-white" />
                   )}
                 </button>
               </div>

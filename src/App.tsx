@@ -391,7 +391,7 @@ function AppContent() {
               }}
               onMinimize={() => getCurrentWindow().minimize()}
               onSettings={() => {}}
-              currentQuote={getCurrentQuote()}
+              currentQuote={getCurrentQuoteObject()}
               isVietnamese={isVietnamese}
               workTime={customTimes.focus}
               shortBreakTime={customTimes.shortBreak}

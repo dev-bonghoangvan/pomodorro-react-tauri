@@ -22,7 +22,7 @@ const LIMITS: Record<DisplayMode, Limits> = {
   small:   { minW: 360, minH: 170, maxW: 480, maxH: 260 },
   compact: { minW: 480, minH: 220 /*, maxW: 720, maxH: 420 */ },
   tall:    { minW: 360, minH: 420 /* chỉ đặt min, cho phép cao hơn */ },
-  full:    { minW: 640, minH: 420 /* không giới hạn max */ },
+  full:    { minW: 640, minH: 760 /* tăng min height để chuyển sang tall mode khi nhỏ hơn */ },
 };
 
 // Đệm để chống nhảy mode khi lắc chuột resize
@@ -40,6 +40,10 @@ function pickMode(width: number, height: number, prev?: DisplayMode): DisplayMod
   }
   if (width <= 720 + (prev === "compact" ? HYSTERESIS : 0) || height <= 400 + (prev === "compact" ? HYSTERESIS : 0)) {
     return "compact";
+  }
+  // Nếu height < 760px thì chuyển sang tall mode thay vì full mode
+  if (height < 760 - (prev === "tall" ? HYSTERESIS : 0)) {
+    return "tall";
   }
   if (ar < 1 && height >= 420 - (prev === "tall" ? HYSTERESIS : 0) && width <= 540 + (prev === "tall" ? HYSTERESIS : 0)) {
     return "tall";

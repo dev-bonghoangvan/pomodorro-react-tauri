@@ -202,8 +202,8 @@ export function FullMode({
         <CardHeader className="pb-4 pt-10">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
-              <span className="text-xl font-bold text-white">
-                Pomodoro Timer
+              <span className="text-xl font-bold" style={{ color: "#1DB954" }}>
+                Pomodoro Timer Vibe Spotify
               </span>
               <span className="text-sm text-gray-400">v1.0</span>
             </div>
@@ -225,7 +225,7 @@ export function FullMode({
 
         <CardContent className="flex-1 flex flex-col p-0">
           {/* Main Layout - YouTube + Timer Side by Side */}
-          <div className="flex-1 flex flex-col xl:flex-row gap-4 p-6">
+          <div className="flex-1 flex flex-col xl:flex-row gap-4 px-2 py-0">
             {/* Left Side - YouTube (Larger) */}
             <div className="flex-1 flex flex-col p-4">
               <div className="flex items-center gap-4 mb-4">

@@ -220,7 +220,7 @@ export function CompactMode({
       <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 shadow-2xl border border-gray-600 p-4 pt-10" style={{ pointerEvents: 'auto' }}>
         {/* Header: Title + Settings button */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-white select-none">Compact Mode</h1>
+          <h1 className="text-xl font-bold text-white select-none">Let's focus to your dreams</h1>
           <Button
             ref={toggleBtnRef}
             onClick={() => setShowSettings(s => !s)}
