@@ -1,13 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Minus, MinusIcon, MoreVertical, Pause, Play, Plus, SkipForward, Timer, X
+  Minus, MinusIcon, MoreVertical, Pause, Play, Plus, Repeat, SkipForward, Timer, X
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { invoke } from '@tauri-apps/api/core';
+import { closeWindow, minimizeWindow } from '../lib/utils';
 import { Button } from '../ui/button';
-import { YouTubeAnchor } from '../player/YouTubeOverlay';
+import { YouTubeAnchor, useYouTubeOverlay } from '../player/YouTubeOverlay';
 import SettingsPanel from './SettingsPanel';
+import { LoopControl } from './LoopControl';
+import { useDropdownPosition } from '../hooks/useDropdownPosition';
 
 interface CompactModeProps {
   timeLeft: number;
@@ -21,7 +24,7 @@ interface CompactModeProps {
   onTabChange: (tab: string) => void;
   getProgress: () => number;
   formatTime: (seconds: number) => string;
-  getTabIcon: (tab: string) => JSX.Element;
+  getTabIcon: (tab: string) => React.ReactNode;
   youtubeUrl: string;
   getYouTubeEmbedUrl: (url: string) => string;
   onWorkTimeChange: (value: number) => void;
@@ -73,6 +76,10 @@ export function CompactMode({
   const settingsRef = useRef<HTMLDivElement>(null); // root container
   const panelRef = useRef<HTMLDivElement>(null);     // settings panel element
   const toggleBtnRef = useRef<HTMLButtonElement>(null); // settings toggle button
+  const [showLoopControl, setShowLoopControl] = useState(false);
+  const loopBtnRef = useRef<HTMLButtonElement>(null);
+  const loopPos = useDropdownPosition(loopBtnRef, showLoopControl, { width: 380, gap: 8, align: 'end' });
+  const { videoDuration, loopConfig } = useYouTubeOverlay();
   // Quote animation refs & state (similar to MiniMode but simplified)
   const quoteContainerRef = useRef<HTMLDivElement>(null);
   const [animationDuration, setAnimationDuration] = useState(15);
@@ -210,13 +217,7 @@ export function CompactMode({
               <div className="flex-1 h-full" data-tauri-drag-region></div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke('minimize_window');
-                    } catch (error) {
-                      console.error('Error minimizing window:', error);
-                    }
-                  }}
+                  onClick={minimizeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Minimize window"
                   data-tauri-drag-region="false"
@@ -224,13 +225,7 @@ export function CompactMode({
                   <MinusIcon className="h-3 w-3" />
                 </button>
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke('close_window');
-                    } catch (error) {
-                      console.error('Error closing window:', error);
-                    }
-                  }}
+                  onClick={closeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Close window"
                   data-tauri-drag-region="false"
@@ -244,7 +239,7 @@ export function CompactMode({
       </AnimatePresence>
 
       {/* Main CompactMode Interface */}
-      <div className="h-full flex flex-col bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 shadow-2xl border border-gray-600 p-4 pt-10" style={{ pointerEvents: 'auto' }}>
+      <div className="h-full flex flex-col bg-[rgba(255,255,255,0.04)] shadow-2xl border border-white/15 p-4 pt-10" style={{ pointerEvents: 'auto' }}>
         {/* Header: Logo + Title + Settings button */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -256,24 +251,87 @@ export function CompactMode({
               <p className="text-xs text-slate-400">Stay productive, stay focused</p>
             </div>
           </div>
-          <Button
-            ref={toggleBtnRef}
-            onClick={() => setShowSettings(s => !s)}
-            aria-expanded={showSettings}
-            aria-label="Toggle settings"
-            size="sm"
-            className={`h-8 w-8 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${showSettings ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}
-          >
-            <MoreVertical className={`h-4 w-4 transition-transform duration-200 ${showSettings ? 'rotate-90' : 'rotate-0'}`} />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              ref={loopBtnRef}
+              onClick={() => setShowLoopControl(!showLoopControl)}
+              size="sm"
+              className={`h-8 w-8 p-0 flex items-center justify-center ${
+                showLoopControl || loopConfig?.loopEnabled || loopConfig?.loopPortion
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-gray-600/80 hover:bg-gray-500/80 text-white'
+              }`}
+            >
+              <Repeat className="w-4 h-4" />
+            </Button>
+            <Button
+              ref={toggleBtnRef}
+              onClick={() => setShowSettings(s => !s)}
+              aria-expanded={showSettings}
+              aria-label="Toggle settings"
+              size="sm"
+              className={`h-8 w-8 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${showSettings ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}
+            >
+              <MoreVertical className={`h-4 w-4 transition-transform duration-200 ${showSettings ? 'rotate-90' : 'rotate-0'}`} />
+            </Button>
+          </div>
         </div>
 
         {/* YouTube Frame */}
-        <div className="w-full overflow-hidden border border-gray-600 mb-4">
-          <div className="aspect-video w-full h-full">
+        <div className="w-full overflow-hidden border border-white/15 mb-4 relative">
+          <div className="aspect-video w-full h-full relative">
             <YouTubeAnchor className="w-full h-full" />
           </div>
         </div>
+        
+        {/* Loop Control Overlay */}
+        {createPortal(
+          <AnimatePresence mode="wait">
+            {showLoopControl && loopPos && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                  onClick={() => setShowLoopControl(false)}
+                />
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: loopPos.placement === 'top' ? 8 : -8,
+                    scale: 0.98,
+                  }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{
+                    opacity: 0,
+                    y: loopPos.placement === 'top' ? 8 : -8,
+                    scale: 0.98,
+                  }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  style={{
+                    position: 'fixed',
+                    top: loopPos.top,
+                    left: loopPos.left,
+                    width: loopPos.width,
+                    maxHeight: loopPos.maxHeight,
+                  }}
+                  className="z-[9999] pointer-events-auto flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <LoopControl
+                    onClose={() => setShowLoopControl(false)}
+                    videoDuration={videoDuration}
+                    style={{ maxHeight: loopPos.maxHeight }}
+                    className="max-h-full"
+                  />
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
 
         {/* Timer & Controls now moved below video */}
         <div className="flex items-center justify-between mt-4 mb-4">
@@ -359,44 +417,57 @@ export function CompactMode({
         )}
       </div>
 
-  {/* Settings Panel Overlay */}
-      <AnimatePresence mode="wait" initial={false}>
-        {showSettings && (
-          <motion.div
-            ref={panelRef}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute top-2 right-2 w-80 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600/60 scrollbar-track-transparent bg-gray-800/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-label="Compact settings"
-          >
-            <SettingsPanel
-              onClose={() => setShowSettings(false)}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              customTimes={customTimes}
-              onWorkTimeChange={onWorkTimeChange}
-              onShortBreakTimeChange={onShortBreakTimeChange}
-              onLongBreakTimeChange={onLongBreakTimeChange}
-              quoteSpeed={quoteSpeed}
-              setQuoteSpeed={setQuoteSpeed}
-              showQuotes={showQuotes}
-              setShowQuotes={setShowQuotes}
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              youtubeUrl={youtubeUrl}
-              onYouTubeUrlChange={onYouTubeUrlChange}
-              width="240px"
-              height="100%"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Settings Panel Overlay */}
+      {createPortal(
+        <AnimatePresence mode="wait">
+          {showSettings && (
+            <>
+              {/* Soft dimmed backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                onClick={() => setShowSettings(false)}
+              />
+              <motion.div
+                ref={panelRef}
+                initial={{ opacity: 0, y: -5, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -5, scale: 0.96 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="fixed top-8 right-3 left-3 sm:left-auto sm:w-[440px] max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-3rem)] z-[9999] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-label="Compact settings"
+              >
+                <SettingsPanel
+                  onClose={() => setShowSettings(false)}
+                  roundsPerCycle={roundsPerCycle}
+                  setRoundsPerCycle={setRoundsPerCycle}
+                  customTimes={customTimes}
+                  onWorkTimeChange={onWorkTimeChange}
+                  onShortBreakTimeChange={onShortBreakTimeChange}
+                  onLongBreakTimeChange={onLongBreakTimeChange}
+                  quoteSpeed={quoteSpeed}
+                  setQuoteSpeed={setQuoteSpeed}
+                  showQuotes={showQuotes}
+                  setShowQuotes={setShowQuotes}
+                  autoStartNext={autoStartNext}
+                  setAutoStartNext={setAutoStartNext}
+                  autoStartBreakType={autoStartBreakType}
+                  setAutoStartBreakType={setAutoStartBreakType}
+                  youtubeUrl={youtubeUrl}
+                  onYouTubeUrlChange={onYouTubeUrlChange}
+                  height="100%"
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

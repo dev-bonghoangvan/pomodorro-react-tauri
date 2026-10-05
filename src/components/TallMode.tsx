@@ -1,16 +1,19 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Clock, Coffee, Minus, MinusIcon, MoreVertical, Pause, Play, Plus, RotateCcw, SkipForward, Timer, X
+    Clock, Coffee, Minus, MinusIcon, MoreVertical, Pause, Play, Plus, Repeat, RotateCcw, SkipForward, Timer, X
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { invoke } from '@tauri-apps/api/core';
+import { closeWindow, minimizeWindow, formatTime } from '../lib/utils';
 
 import { Button } from '../ui/button';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
-import { YouTubeAnchor } from '../player/YouTubeOverlay';
+import { YouTubeAnchor, useYouTubeOverlay } from '../player/YouTubeOverlay';
 import quotesData from '../quotes/quotes.json';
 import SettingsPanel from './SettingsPanel';
+import { LoopControl } from './LoopControl';
+import { useDropdownPosition } from '../hooks/useDropdownPosition';
 
 interface TallModeProps {
   timeLeft: number;
@@ -20,8 +23,6 @@ interface TallModeProps {
   onPlayPause: () => void;
   onSkip: () => void;
   onReset: () => void;
-  onMinimize: () => void;
-  onSettings: () => void;
   currentQuote: { en: string; vi: string };
   isVietnamese: boolean;
   workTime: number;
@@ -49,8 +50,6 @@ export function TallMode({
   onPlayPause,
   onSkip,
   onReset,
-  onMinimize,
-  onSettings,
   currentQuote,
   isVietnamese,
   workTime,
@@ -74,6 +73,10 @@ export function TallMode({
   const hoverTimeoutRef = useRef<number | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [localQuoteIndex, setLocalQuoteIndex] = useState(0);
+  const [showLoopControl, setShowLoopControl] = useState(false);
+  const loopBtnRef = useRef<HTMLButtonElement>(null);
+  const loopPos = useDropdownPosition(loopBtnRef, showLoopControl, { width: 380, gap: 8, align: 'end' });
+  const { videoDuration, loopConfig } = useYouTubeOverlay();
 
   // Handle hover with delay (like CompactMode)
   const handleMouseEnter = () => {
@@ -129,21 +132,8 @@ export function TallMode({
     };
   }, [showSettings]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   const getProgress = () => {
-    const totalTime =
-      currentTab === "focus"
-        ? customTimes.focus * 60
-        : currentTab === "shortBreak"
-        ? customTimes.shortBreak * 60
-        : customTimes.longBreak * 60;
+    const totalTime = customTimes[currentTab as keyof typeof customTimes] * 60;
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
@@ -175,13 +165,7 @@ export function TallMode({
               <div className="flex-1 h-full" data-tauri-drag-region></div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke('minimize_window');
-                    } catch (error) {
-                      console.error('Error minimizing window:', error);
-                    }
-                  }}
+                  onClick={minimizeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Minimize window"
                   data-tauri-drag-region="false"
@@ -189,13 +173,7 @@ export function TallMode({
                   <MinusIcon className="h-3 w-3" />
                 </button>
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke('close_window');
-                    } catch (error) {
-                      console.error('Error closing window:', error);
-                    }
-                  }}
+                  onClick={closeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Close window"
                   data-tauri-drag-region="false"
@@ -209,7 +187,7 @@ export function TallMode({
       </AnimatePresence>
    
       {/* Main TallMode Interface - Vertical Layout */}
-      <div className="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      <div className="w-full h-full flex flex-col bg-[rgba(255,255,255,0.04)]">
         {/* Header Section - Add padding for drag area */}
         <div className="flex justify-between items-center p-4 pt-8 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
@@ -221,26 +199,89 @@ export function TallMode({
               <p className="text-xs text-slate-400">Stay productive, stay focused</p>
             </div>
           </div>
-          <Button
-            onClick={() => setShowSettings(!showSettings)}
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              ref={loopBtnRef}
+              onClick={() => setShowLoopControl(!showLoopControl)}
+              size="sm"
+              className={`h-8 w-8 p-0 flex items-center justify-center ${
+                showLoopControl || loopConfig?.loopEnabled || loopConfig?.loopPortion
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-gray-600/80 hover:bg-gray-500/80 text-white'
+              }`}
+            >
+              <Repeat className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={() => setShowSettings(!showSettings)}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-slate-700/50"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* YouTube Section - Larger */}
         <motion.div
-          className="px-4 py-3"
+          className="px-4 py-3 relative"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="w-full h-40 rounded-xl overflow-hidden bg-slate-800/50 border border-slate-700/50">
+          <div className="w-full h-40 rounded-xl overflow-hidden bg-slate-800/50 border border-slate-700/50 relative">
             <YouTubeAnchor className="w-full h-full" />
           </div>
+          
+          {/* Loop Control Overlay */}
+          {createPortal(
+            <AnimatePresence mode="wait">
+              {showLoopControl && loopPos && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                    onClick={() => setShowLoopControl(false)}
+                  />
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      y: loopPos.placement === 'top' ? 8 : -8,
+                      scale: 0.98,
+                    }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      y: loopPos.placement === 'top' ? 8 : -8,
+                      scale: 0.98,
+                    }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    style={{
+                      position: 'fixed',
+                      top: loopPos.top,
+                      left: loopPos.left,
+                      width: loopPos.width,
+                      maxHeight: loopPos.maxHeight,
+                    }}
+                    className="z-[9999] pointer-events-auto flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <LoopControl
+                      onClose={() => setShowLoopControl(false)}
+                      videoDuration={videoDuration}
+                      style={{ maxHeight: loopPos.maxHeight }}
+                      className="max-h-full"
+                    />
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>,
+            document.body
+          )}
         </motion.div>
 
         {/* Main Content - Vertical Stack */}
@@ -419,41 +460,49 @@ export function TallMode({
       </div>
 
       {/* Settings Panel Dropdown */}
-      <AnimatePresence mode="wait" initial={false}>
-        {showSettings && (
-          <motion.div
-            ref={settingsRef}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute top-16 right-4 w-80 bg-slate-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 p-6 z-[1001]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SettingsPanel
-              onClose={() => setShowSettings(false)}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              customTimes={customTimes}
-              onWorkTimeChange={onWorkTimeChange}
-              onShortBreakTimeChange={onShortBreakTimeChange}
-              onLongBreakTimeChange={onLongBreakTimeChange}
-              quoteSpeed="Normal"
-              setQuoteSpeed={() => {}}
-              showQuotes={true}
-              setShowQuotes={() => {}}
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              youtubeUrl={youtubeUrl}
-              onYouTubeUrlChange={() => {}}
-              width="240px"
-              height="100%"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {createPortal(
+        <AnimatePresence mode="wait">
+          {showSettings && (
+            <>
+              {/* Soft dimmed backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                onClick={() => setShowSettings(false)}
+              />
+              <motion.div
+                ref={settingsRef}
+                initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="fixed top-8 inset-x-3 sm:inset-x-auto sm:right-4 sm:w-[440px] max-w-[calc(100vw-1.5rem)] max-h-[calc(100vh-3rem)] z-[9999] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SettingsPanel
+                  onClose={() => setShowSettings(false)}
+                  roundsPerCycle={roundsPerCycle}
+                  setRoundsPerCycle={setRoundsPerCycle}
+                  customTimes={customTimes}
+                  onWorkTimeChange={onWorkTimeChange}
+                  onShortBreakTimeChange={onShortBreakTimeChange}
+                  onLongBreakTimeChange={onLongBreakTimeChange}
+                  autoStartNext={autoStartNext}
+                  setAutoStartNext={setAutoStartNext}
+                  autoStartBreakType={autoStartBreakType}
+                  setAutoStartBreakType={setAutoStartBreakType}
+                  youtubeUrl={youtubeUrl}
+                  height="100%"
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

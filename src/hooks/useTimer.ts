@@ -15,16 +15,12 @@ interface UseTimerReturn {
   timeLeft: number;
   isRunning: boolean;
   activeTab: string;
-  completedRounds: number;
   setTimeLeft: (time: number) => void;
   setIsRunning: (running: boolean) => void;
   setActiveTab: (tab: string) => void;
-  setCompletedRounds: (rounds: number) => void;
   handleStart: () => void;
   handlePause: () => void;
-  handleStop: () => void;
   handleNext: () => void;
-  resetTimer: () => void;
 }
 
 export function useTimer({
@@ -65,8 +61,8 @@ export function useTimer({
     };
   }, [isRunning, timeLeft]);
 
-  // Play sound notification
-  const playNotificationSound = () => {
+  // Play a short sine beep
+  const playBeep = (freq: number, gain: number, ms: number) => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const o = ctx.createOscillator();
@@ -74,17 +70,18 @@ export function useTimer({
       o.connect(g);
       g.connect(ctx.destination);
       o.type = "sine";
-      o.frequency.value = 880;
-      g.gain.value = 0.1;
+      o.frequency.value = freq;
+      g.gain.value = gain;
       o.start();
       setTimeout(() => {
         o.stop();
         ctx.close();
-      }, 600);
+      }, ms);
     } catch (error) {
       console.warn('Could not play notification sound:', error);
     }
   };
+  const playNotificationSound = () => playBeep(880, 0.1, 600);
 
   // Handle timer completion
   const handleTimerComplete = () => {
@@ -114,26 +111,8 @@ export function useTimer({
           setCompletedRounds(0);
           setActiveTab('focus');
           setTimeLeft(customTimes.focus * 60);
-          // Play a different sound for cycle completion
-          setTimeout(() => {
-            try {
-              const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-              const o = ctx.createOscillator();
-              const g = ctx.createGain();
-              o.connect(g);
-              g.connect(ctx.destination);
-              o.type = "sine";
-              o.frequency.value = 1200; // Higher pitch for cycle completion
-              g.gain.value = 0.15;
-              o.start();
-              setTimeout(() => {
-                o.stop();
-                ctx.close();
-              }, 800);
-            } catch (error) {
-              console.warn('Could not play cycle completion sound:', error);
-            }
-          }, 500);
+          // Higher pitch for cycle completion
+          setTimeout(() => playBeep(1200, 0.15, 800), 500);
         }
       }
     }
@@ -142,17 +121,7 @@ export function useTimer({
   // Update timer when tab changes (manual change)
   useEffect(() => {
     if (!isRunning) {
-      switch (activeTab) {
-        case 'focus':
-          setTimeLeft(customTimes.focus * 60);
-          break;
-        case 'shortBreak':
-          setTimeLeft(customTimes.shortBreak * 60);
-          break;
-        case 'longBreak':
-          setTimeLeft(customTimes.longBreak * 60);
-          break;
-      }
+      setTimeLeft(customTimes[activeTab as keyof typeof customTimes] * 60);
     }
   }, [activeTab, customTimes, isRunning]);
 
@@ -165,21 +134,6 @@ export function useTimer({
 
   const handleStart = () => setIsRunning(true);
   const handlePause = () => setIsRunning(false);
-  
-  const handleStop = () => {
-    setIsRunning(false);
-    switch (activeTab) {
-      case 'focus':
-        setTimeLeft(customTimes.focus * 60);
-        break;
-      case 'shortBreak':
-        setTimeLeft(customTimes.shortBreak * 60);
-        break;
-      case 'longBreak':
-        setTimeLeft(customTimes.longBreak * 60);
-        break;
-    }
-  };
 
   const handleNext = () => {
     const tabs = ['focus', 'shortBreak', 'longBreak'];
@@ -188,26 +142,15 @@ export function useTimer({
     setActiveTab(tabs[nextIndex]);
   };
 
-  const resetTimer = () => {
-    setIsRunning(false);
-    setCompletedRounds(0);
-    setActiveTab('focus');
-    setTimeLeft(customTimes.focus * 60);
-  };
-
   return {
     timeLeft,
     isRunning,
     activeTab,
-    completedRounds,
     setTimeLeft,
     setIsRunning,
     setActiveTab,
-    setCompletedRounds,
     handleStart,
     handlePause,
-    handleStop,
     handleNext,
-    resetTimer,
   };
 }

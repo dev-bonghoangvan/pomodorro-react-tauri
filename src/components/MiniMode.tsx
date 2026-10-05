@@ -4,14 +4,16 @@ import {
   MoreVertical,
   Pause,
   Play,
+  Repeat,
   SkipForward,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { invoke } from "@tauri-apps/api/core";
+import { closeWindow } from "../lib/utils";
 
-import { YouTubeAnchor } from "../player/YouTubeOverlay";
+import { YouTubeAnchor, useYouTubeOverlay } from "../player/YouTubeOverlay";
+import { LoopControl } from "./LoopControl";
 import { Button } from "../ui/button";
 import { toggleExpand } from "../ui/toggleExpand";
 import SettingsPanel from "./SettingsPanel";
@@ -68,6 +70,8 @@ export function MiniMode({
   onYouTubeUrlChange,
 }: MiniModeProps) {
   const [showSettings, setShowSettings] = useState(false); // logical state (expanded)
+  const [showLoopControl, setShowLoopControl] = useState(false);
+  const { videoDuration, loopConfig } = useYouTubeOverlay();
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
   const [animationDuration, setAnimationDuration] = useState(15);
@@ -235,7 +239,7 @@ export function MiniMode({
     >
       {/* Main MiniMode Interface */}
       <div
-        className="h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800  relative shadow-2xl overflow-hidden"
+        className="h-full bg-[rgba(255,255,255,0.04)]  relative shadow-2xl overflow-hidden"
         ref={settingsRef}
       >
         {/* Left controls (hover to reveal) - Spotify style */}
@@ -253,11 +257,9 @@ export function MiniMode({
               aria-label="Close"
               className="h-3 w-3 rounded-full bg-white/90 hover:bg-white text-gray-800 shadow flex items-center justify-center"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={async (e) => {
+              onClick={(e) => {
                 e.stopPropagation();
-                try {
-                  await invoke("close_window");
-                } catch (error) {}
+                closeWindow();
               }}
               data-tauri-drag-region="false"
             >
@@ -288,7 +290,7 @@ export function MiniMode({
             {/* YouTube Thumbnail */}
             <div
               ref={thumbnailRef}
-              className="w-8 h-8 rounded-lg border border-gray-600 overflow-hidden bg-black/80 flex-shrink-0"
+              className="w-8 h-8 rounded-lg border border-white/15 overflow-hidden bg-black/80 flex-shrink-0 relative"
             >
               <YouTubeAnchor className="w-full h-full" />
             </div>
@@ -348,7 +350,7 @@ export function MiniMode({
           {/* Right section - Control Buttons (anchored) */}
           <div
             className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 ${
-              showSettings ? "right-60" : "right-2"
+              showSettings || showLoopControl ? "right-60" : "right-2"
             }`}
           >
             {/* Control Buttons */}
@@ -398,21 +400,43 @@ export function MiniMode({
               </AnimatePresence>
             </div>
 
-            {/* Settings button - triggers expand / collapse */}
-            <button
-              onClick={async () => {
-                const next = !showSettings;
-                setShowSettings(next);
-                await toggleExpand("right");
-              }}
-              className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
-                showSettings
-                  ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                  : "bg-gray-600 hover:bg-gray-500 text-white"
-              }`}
-            >
-              <MoreVertical className="h-3 w-3" />
-            </button>
+            {/* Loop and Settings buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  const next = !showLoopControl;
+                  setShowLoopControl(next);
+                  if (next) {
+                    setShowSettings(false);
+                  }
+                  await toggleExpand("right");
+                }}
+                className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
+                  showLoopControl || loopConfig?.loopEnabled || loopConfig?.loopPortion
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "bg-gray-600 hover:bg-gray-500 text-white"
+                }`}
+              >
+                <Repeat className="h-3 w-3" />
+              </button>
+              <button
+                onClick={async () => {
+                  const next = !showSettings;
+                  setShowSettings(next);
+                  if (next) {
+                    setShowLoopControl(false);
+                  }
+                  await toggleExpand("right");
+                }}
+                className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
+                  showSettings
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    : "bg-gray-600 hover:bg-gray-500 text-white"
+                }`}
+              >
+                <MoreVertical className="h-3 w-3" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -446,9 +470,34 @@ export function MiniMode({
               setAutoStartBreakType={setAutoStartBreakType}
               youtubeUrl={youtubeUrl}
               onYouTubeUrlChange={onYouTubeUrlChange}
-              width="240px"
+              width="320px"
               height="100%"
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Loop Control Panel - Slide from right like Settings */}
+      <AnimatePresence mode="wait" initial={false}>
+        {showLoopControl && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute inset-y-0 right-0 z-[1100] w-[320px] glass rounded-l-lg border-l border-white/15 shadow-2xl flex flex-col"
+          >
+            <div className="h-full overflow-y-auto">
+              <LoopControl
+                onClose={async () => {
+                  setShowLoopControl(false);
+                  await toggleExpand("right");
+                }}
+                videoDuration={videoDuration}
+                className="h-full border-0 rounded-none shadow-none p-3.5 bg-transparent max-h-none"
+                style={{ maxHeight: '100%' }}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,12 +1,15 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { MinusIcon, MoreVertical, Pause, Play, SkipForward, X } from "lucide-react";
+import { MinusIcon, MoreVertical, Pause, Play, Repeat, SkipForward, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
-import { invoke } from "@tauri-apps/api/core";
+import { closeWindow, minimizeWindow } from "../lib/utils";
 
-import { YouTubeAnchor } from "../player/YouTubeOverlay";
+import { YouTubeAnchor, useYouTubeOverlay } from "../player/YouTubeOverlay";
+import { LoopControl } from "./LoopControl";
 import { Button } from "../ui/button";
 import SettingsPanel from "./SettingsPanel";
+import { useDropdownPosition } from "../hooks/useDropdownPosition";
 
 interface SmallModeProps {
   timeLeft: number;
@@ -60,6 +63,10 @@ export function SmallMode({
   onYouTubeUrlChange,
 }: SmallModeProps) {
   const [showSettings, setShowSettings] = useState(false);
+  const [showLoopControl, setShowLoopControl] = useState(false);
+  const loopBtnRef = useRef<HTMLButtonElement>(null);
+  const loopPos = useDropdownPosition(loopBtnRef, showLoopControl, { width: 380, gap: 8, align: 'end' });
+  const { videoDuration, loopConfig } = useYouTubeOverlay();
   const [quoteSpeed, setQuoteSpeed] = useState("Normal");
   const [showQuotes, setShowQuotes] = useState(true);
   const [animationDuration, setAnimationDuration] = useState(15);
@@ -260,13 +267,7 @@ export function SmallMode({
               <div className="flex-1 h-full" data-tauri-drag-region></div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke("minimize_window");
-                    } catch (error) {
-                      console.error("Error minimizing window:", error);
-                    }
-                  }}
+                  onClick={minimizeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Minimize window"
                   data-tauri-drag-region="false"
@@ -274,13 +275,7 @@ export function SmallMode({
                   <MinusIcon className="h-3 w-3" />
                 </button>
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke("close_window");
-                    } catch (error) {
-                      console.error("Error closing window:", error);
-                    }
-                  }}
+                  onClick={closeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Close window"
                   data-tauri-drag-region="false"
@@ -295,16 +290,49 @@ export function SmallMode({
 
       {/* Main SmallMode Interface */}
       <div
-        className="h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 relative shadow-2xl overflow-hidden"
+        className="h-full bg-[rgba(255,255,255,0.04)] relative shadow-2xl overflow-hidden"
         ref={settingsRef}
       >
         {/* Main Content Layout - Optimized for small size */}
         <div className={`flex h-full transition-all duration-200 ${isHovered ? 'pt-[30px]' : ''}`}>
           {/* Left Side - YouTube iframe */}
           <div className={`w-36 transition-all duration-200 ${isHovered ? 'p-2 pt-1' : 'p-2'}`}>
-            <div className={`rounded-lg overflow-hidden bg-gray-700 border border-gray-600 transition-all duration-200 ${isHovered ? 'h-24' : 'h-28'}`}>
+            <div className={`rounded-lg overflow-hidden bg-white/10 border border-white/15 transition-all duration-200 ${isHovered ? 'h-24' : 'h-28'} relative`}>
               <YouTubeAnchor className="w-full h-full" />
             </div>
+            
+            {/* Loop Control Drawer - Slides from right in SmallMode */}
+            {createPortal(
+              <AnimatePresence>
+                {showLoopControl && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                      onClick={() => setShowLoopControl(false)}
+                    />
+                    <motion.div
+                      initial={{ x: "100%" }}
+                      animate={{ x: 0 }}
+                      exit={{ x: "100%" }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="fixed inset-y-0 right-0 z-[9999] w-[360px] max-w-[92vw] flex flex-col"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <LoopControl
+                        onClose={() => setShowLoopControl(false)}
+                        videoDuration={videoDuration}
+                        className="h-full rounded-none rounded-l-2xl border-r-0 max-h-none shadow-2xl"
+                      />
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>,
+              document.body
+            )}
           </div>
 
           {/* Right Side - Timer (Compact) */}
@@ -376,19 +404,38 @@ export function SmallMode({
                   )}
                 </AnimatePresence>
 
-                {/* Settings button */}
-                <button
-                  onClick={() => {
-                    setShowSettings(!showSettings);
-                  }}
-                  className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
-                    showSettings
-                      ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                      : "bg-gray-600 hover:bg-gray-500 text-white"
-                  }`}
-                >
-                  <MoreVertical className="h-3 w-3" />
-                </button>
+                {/* Loop and Settings buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    ref={loopBtnRef}
+                    onClick={() => {
+                      const next = !showLoopControl;
+                      setShowLoopControl(next);
+                      if (next) setShowSettings(false);
+                    }}
+                    className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
+                      showLoopControl || loopConfig?.loopEnabled || loopConfig?.loopPortion
+                        ? "bg-red-500 hover:bg-red-600 text-white"
+                        : "bg-gray-600 hover:bg-gray-500 text-white"
+                    }`}
+                  >
+                    <Repeat className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const next = !showSettings;
+                      setShowSettings(next);
+                      if (next) setShowLoopControl(false);
+                    }}
+                    className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
+                      showSettings
+                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                        : "bg-gray-600 hover:bg-gray-500 text-white"
+                    }`}
+                  >
+                    <MoreVertical className="h-3 w-3" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -445,41 +492,54 @@ export function SmallMode({
       </div>
 
       {/* Settings Panel - Slide from right */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute inset-y-0 right-0 z-[1001]"
-          >
-            <SettingsPanel
-              onClose={() => {
-                setShowSettings(false);
-              }}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              customTimes={customTimes}
-              onWorkTimeChange={onWorkTimeChange}
-              onShortBreakTimeChange={onShortBreakTimeChange}
-              onLongBreakTimeChange={onLongBreakTimeChange}
-              quoteSpeed={quoteSpeed}
-              setQuoteSpeed={setQuoteSpeed}
-              showQuotes={showQuotes}
-              setShowQuotes={setShowQuotes}
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              youtubeUrl={youtubeUrl}
-              onYouTubeUrlChange={onYouTubeUrlChange}
-              width="220px"
-              height="100%"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {createPortal(
+        <AnimatePresence>
+          {showSettings && (
+            <>
+              {/* Soft dimmed backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                onClick={() => setShowSettings(false)}
+              />
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="fixed inset-y-0 right-0 z-[9999] w-[360px] max-w-[92vw] flex flex-col"
+              >
+                <SettingsPanel
+                  onClose={() => {
+                    setShowSettings(false);
+                  }}
+                  roundsPerCycle={roundsPerCycle}
+                  setRoundsPerCycle={setRoundsPerCycle}
+                  customTimes={customTimes}
+                  onWorkTimeChange={onWorkTimeChange}
+                  onShortBreakTimeChange={onShortBreakTimeChange}
+                  onLongBreakTimeChange={onLongBreakTimeChange}
+                  quoteSpeed={quoteSpeed}
+                  setQuoteSpeed={setQuoteSpeed}
+                  showQuotes={showQuotes}
+                  setShowQuotes={setShowQuotes}
+                  autoStartNext={autoStartNext}
+                  setAutoStartNext={setAutoStartNext}
+                  autoStartBreakType={autoStartBreakType}
+                  setAutoStartBreakType={setAutoStartBreakType}
+                  youtubeUrl={youtubeUrl}
+                  onYouTubeUrlChange={onYouTubeUrlChange}
+                  height="100%"
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
