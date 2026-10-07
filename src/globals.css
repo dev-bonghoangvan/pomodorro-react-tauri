@@ -2,16 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom window styling for rounded corners */
+/* Window styling */
+html,
 body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  height: 100%;
+  width: 100%;
+  background: #0b1020;
 }
 
 #root {
   overflow: hidden;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
+  background: #0b1020;
 }
 
 :root {
@@ -89,7 +95,7 @@ body {
   }
   body {
     @apply text-foreground;
-    background: transparent;
+    background: #0b1020;
   }
 }
 
@@ -98,7 +104,8 @@ body {
 /* Aurora backdrop: deep gradient + slow drifting colour blobs */
 .liquid-bg {
   position: relative; /* no z-index / isolation: must NOT create a stacking context, or modals inside get trapped below the YouTube overlay (z-index 1000) */
-  border-radius: 18px;
+  width: 100%;
+  height: 100%;
   background:
     radial-gradient(120% 90% at 0% 0%, #1e1b4b 0%, transparent 60%),
     radial-gradient(100% 80% at 100% 100%, #064e3b 0%, transparent 60%),

@@ -29,3 +29,4 @@ src-tauri/target
 
 /dist
 /.cursor
+/.vite

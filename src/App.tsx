@@ -193,7 +193,7 @@ function AppContent() {
   };
 
   return (
-    <div className="liquid-bg min-h-screen overflow-hidden">
+    <div className="liquid-bg w-full h-full overflow-hidden">
       {/* Render different modes based on window size */}
       <AnimatePresence mode="sync" initial={false}>
         {mode === "mini" && (

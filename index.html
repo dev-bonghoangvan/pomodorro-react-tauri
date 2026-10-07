@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pomodoro vibe spotify</title>
     <style>
-      /* Transparent so the Tauri window lets the liquid-glass background show through */
-      html, body, #root { height: 100%; margin: 0; background: transparent; }
+      /* Dark background matching liquid-bg base so WebView never shows white corners */
+      html, body, #root { height: 100%; width: 100%; margin: 0; padding: 0; background: #0b1020; overflow: hidden; }
     </style>
   </head>
   <body>
