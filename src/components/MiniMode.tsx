@@ -283,14 +283,14 @@ export function MiniMode({
         <div className="flex items-center py-3 h-full">
           {/* Middle section - Thumbnail, Timer and Quotes (animated, can be hidden behind right section) */}
           <div
-            className={`flex items-center gap-2 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2 pr-16 ${
+            className={`flex items-center gap-1.5 transition-transform duration-200 ease-out flex-1 min-w-0 pl-2 pr-[126px] ${
               isHovered ? "translate-x-8" : "translate-x-0"
             }`}
           >
             {/* YouTube Thumbnail */}
             <div
               ref={thumbnailRef}
-              className="w-8 h-8 rounded-lg border border-white/15 overflow-hidden bg-black/80 flex-shrink-0 relative"
+              className="w-7 h-7 rounded-md border border-white/15 overflow-hidden bg-black/80 flex-shrink-0 relative"
             >
               <YouTubeAnchor className="w-full h-full" />
             </div>
@@ -318,11 +318,11 @@ export function MiniMode({
                   </motion.div>
                 </div>
               )}
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-mono font-bold text-white whitespace-nowrap">
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-mono font-bold text-white whitespace-nowrap tracking-tight">
                   {formatTime(timeLeft)}
                 </span>
-                <span className="text-sm text-gray-300 font-medium whitespace-nowrap">
+                <span className="text-[11px] text-gray-300 font-medium whitespace-nowrap hidden min-[320px]:inline">
                   ({modeLabel})
                 </span>
               </div>
@@ -349,12 +349,12 @@ export function MiniMode({
 
           {/* Right section - Control Buttons (anchored) */}
           <div
-            className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 ${
-              showSettings || showLoopControl ? "right-60" : "right-2"
+            className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 z-20 ${
+              showSettings || showLoopControl ? "right-[326px]" : "right-1.5"
             }`}
           >
             {/* Control Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <AnimatePresence mode="wait" initial={false}>
                 {!isRunning ? (
                   <motion.div
@@ -367,15 +367,15 @@ export function MiniMode({
                     <Button
                       onClick={onStart}
                       size="sm"
-                      className="h-8 w-8 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
+                      className="h-7 w-7 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-md flex items-center justify-center p-0 transition-colors duration-150"
                     >
-                      <Play className="h-4 w-4 ml-0.5" />
+                      <Play className="h-3.5 w-3.5 ml-0.5" />
                     </Button>
                   </motion.div>
                 ) : (
                   <motion.div
                     key="pause-next"
-                    className="flex gap-2"
+                    className="flex items-center gap-1"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -384,16 +384,16 @@ export function MiniMode({
                     <Button
                       onClick={onPause}
                       size="sm"
-                      className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
+                      className="h-7 w-7 rounded-full text-white shadow-md flex items-center justify-center p-0 transition-colors duration-150"
                     >
-                      <Pause className="h-4 w-4" />
+                      <Pause className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       onClick={onNext}
                       size="sm"
-                      className="h-8 w-8 rounded-full bg-gray-600 hover:bg-gray-500 text-white shadow-lg flex items-center justify-center p-0 transition-colors duration-150"
+                      className="h-7 w-7 rounded-full text-white shadow-md flex items-center justify-center p-0 transition-colors duration-150"
                     >
-                      <SkipForward className="h-4 w-4" />
+                      <SkipForward className="h-3.5 w-3.5" />
                     </Button>
                   </motion.div>
                 )}
@@ -401,7 +401,7 @@ export function MiniMode({
             </div>
 
             {/* Loop and Settings buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 onClick={async () => {
                   const next = !showLoopControl;
@@ -411,11 +411,12 @@ export function MiniMode({
                   }
                   await toggleExpand("right");
                 }}
-                className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
+                className={`h-6 w-6 rounded-full shadow-md flex items-center justify-center p-0 transition-all duration-200 ${
                   showLoopControl || loopConfig?.loopEnabled || loopConfig?.loopPortion
                     ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-gray-600 hover:bg-gray-500 text-white"
+                    : "bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/10"
                 }`}
+                title="Lặp video"
               >
                 <Repeat className="h-3 w-3" />
               </button>
@@ -428,11 +429,12 @@ export function MiniMode({
                   }
                   await toggleExpand("right");
                 }}
-                className={`h-6 w-6 rounded-full shadow-lg flex items-center justify-center p-0 transition-all duration-200 ${
+                className={`h-6 w-6 rounded-full shadow-md flex items-center justify-center p-0 transition-all duration-200 ${
                   showSettings
                     ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                    : "bg-gray-600 hover:bg-gray-500 text-white"
+                    : "bg-white/10 hover:bg-white/20 text-white/90 hover:text-white border border-white/10"
                 }`}
+                title="Cài đặt"
               >
                 <MoreVertical className="h-3 w-3" />
               </button>
