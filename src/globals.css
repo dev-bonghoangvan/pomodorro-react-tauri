@@ -2,16 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom window styling for rounded corners */
+/* Window styling */
+html,
 body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  height: 100%;
+  width: 100%;
+  background: #0b1020;
 }
 
 #root {
   overflow: hidden;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
+  background: #0b1020;
 }
 
 :root {
@@ -88,8 +94,113 @@ body {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: #0b1020;
   }
+}
+
+/* ───────────── Liquid Glass ───────────── */
+
+/* Aurora backdrop: deep gradient + slow drifting colour blobs */
+.liquid-bg {
+  position: relative; /* no z-index / isolation: must NOT create a stacking context, or modals inside get trapped below the YouTube overlay (z-index 1000) */
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(120% 90% at 0% 0%, #1e1b4b 0%, transparent 60%),
+    radial-gradient(100% 80% at 100% 100%, #064e3b 0%, transparent 60%),
+    linear-gradient(135deg, #0b1020 0%, #0f1b2d 50%, #0a1f1c 100%);
+}
+/* Drifting colour blobs; mode wrappers are `relative` so they paint above this layer */
+.liquid-bg::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(35% 35% at 25% 20%, rgba(52, 211, 153, 0.55), transparent 70%),
+    radial-gradient(35% 35% at 75% 80%, rgba(168, 85, 247, 0.5), transparent 70%),
+    radial-gradient(30% 30% at 80% 20%, rgba(34, 211, 238, 0.35), transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  animation: liquid-drift 24s ease-in-out infinite alternate;
+}
+@keyframes liquid-drift {
+  to { transform: translate(6%, 5%) rotate(8deg) scale(1.15); }
+}
+
+/* Glass surface: frosted blur + specular rim light */
+.glass,
+.glass-auto {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.28);
+}
+.glass-hover {
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.glass-hover:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%);
+}
+.glass-hover:active {
+  transform: scale(0.97);
+}
+/* Tinted (emerald) glass for primary actions */
+.glass-accent {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.55) 0%, rgba(16, 185, 129, 0.25) 100%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  backdrop-filter: blur(20px) saturate(200%);
+  border: 1px solid rgba(167, 243, 208, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 6px 24px rgba(16, 185, 129, 0.35);
+}
+
+/* Existing translucent slate/gray panels (e.g. bg-slate-800/50) get the frosted blur automatically */
+[class*="bg-slate-"][class*="/"],
+[class*="bg-gray-"][class*="/"],
+[class*="bg-black/"],
+[class*="bg-white/"] {
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* Premium modal glass panel */
+.glass-panel {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.78) 100%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 24px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* Slim frosted scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 211, 153, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-bg::before { animation: none; }
 }
 
 /* Custom gradient backgrounds */

@@ -74,6 +74,18 @@ export function useWindowSize(): WindowSize {
   const [size, setSize] = useState<WindowSize>({ width: 300, height: 200, mode: "mini" });
 
   useEffect(() => {
+    // Plain browser (e.g. `vite` preview): no Tauri window API, use DOM size/resize
+    if (!("__TAURI_INTERNALS__" in window)) {
+      const update = () =>
+        setSize((prev) => {
+          const { innerWidth: width, innerHeight: height } = window;
+          return { width, height, mode: pickMode(width, height, prev.mode) };
+        });
+      update();
+      window.addEventListener("resize", update);
+      return () => window.removeEventListener("resize", update);
+    }
+
     const win = getCurrentWindow();
 
     // Init

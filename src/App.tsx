@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Coffee, Timer } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { CompactMode } from "./components/CompactMode";
 import { FullMode } from "./components/FullMode";
@@ -16,22 +15,9 @@ import {
   YouTubeOverlayProvider,
 } from "./player/YouTubeOverlay";
 import quotesData from "./quotes/quotes.json";
-// @ts-ignore
-import USAFlag from "./svgs/usa.svg";
-// @ts-ignore
-import VietnamFlag from "./svgs/vietnam.svg";
+import { formatTime } from "./lib/utils";
 
-function useInterval(callback: () => void, delay: number | null) {
-  const saved = useRef(callback);
-  useEffect(() => {
-    saved.current = callback;
-  }, [callback]);
-  useEffect(() => {
-    if (delay === null) return;
-    const id = setInterval(() => saved.current(), delay);
-    return () => clearInterval(id);
-  }, [delay]);
-}
+const YT_ID_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
 
 function AppContent() {
   const [isYouTubeExpanded, setIsYouTubeExpanded] = useState(false);
@@ -58,16 +44,12 @@ function AppContent() {
     timeLeft,
     isRunning,
     activeTab,
-    completedRounds,
     setTimeLeft,
     setIsRunning,
     setActiveTab,
-    setCompletedRounds,
     handleStart,
     handlePause,
-    handleStop,
     handleNext,
-    resetTimer,
   } = useTimer({
     autoStartNext,
     autoStartBreakType,
@@ -76,7 +58,7 @@ function AppContent() {
   });
 
   // Get window size and display mode
-  const { width, height, mode } = useWindowSize();
+  const { mode } = useWindowSize();
 
   // When a quote animation completes (MiniMode) pick a new random quote (avoid immediate repeat)
   const handleQuoteAnimationComplete = () => {
@@ -92,18 +74,8 @@ function AppContent() {
   };
 
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
-    );
+    const videoId = url.match(YT_ID_RE);
     if (!videoId) return "";
     const params = new URLSearchParams({
       autoplay: "0",
@@ -147,9 +119,7 @@ function AppContent() {
 
   // Update video ID when YouTube URL changes
   useEffect(() => {
-    const videoId = youtubeUrl.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
-    );
+    const videoId = youtubeUrl.match(YT_ID_RE);
     if (videoId) {
       console.log("App: Setting video ID to", videoId[1]);
       setVideoId(videoId[1]);
@@ -175,160 +145,83 @@ function AppContent() {
     }
   };
 
-  const getCurrentQuote = () => {
-    const quote = quotesData[currentQuoteIndex];
-    return isVietnamese ? quote.vi : quote.en;
-  };
-
   const getCurrentQuoteObject = () => {
     return quotesData[currentQuoteIndex];
   };
 
+  // Props shared by every display mode (times, auto-start, rounds, YouTube)
+  const settingsProps = {
+    customTimes,
+    youtubeUrl,
+    getYouTubeEmbedUrl,
+    onWorkTimeChange: (value: number) =>
+      setCustomTimes((prev) => ({ ...prev, focus: value })),
+    onShortBreakTimeChange: (value: number) =>
+      setCustomTimes((prev) => ({ ...prev, shortBreak: value })),
+    onLongBreakTimeChange: (value: number) =>
+      setCustomTimes((prev) => ({ ...prev, longBreak: value })),
+    autoStartNext,
+    setAutoStartNext,
+    autoStartBreakType,
+    setAutoStartBreakType,
+    roundsPerCycle,
+    setRoundsPerCycle,
+  };
+
+  // Props shared by the mini / small / compact modes
+  const timerProps = {
+    ...settingsProps,
+    timeLeft,
+    isRunning,
+    activeTab,
+    onStart: handleStart,
+    onPause: handlePause,
+    onNext: handleNext,
+    getProgress,
+    formatTime,
+    currentQuote: getCurrentQuoteObject(),
+    onYouTubeUrlChange: setYoutubeUrl,
+    onAnimationComplete: handleQuoteAnimationComplete,
+  };
+
+  const fade = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.3 },
+    className: "h-screen relative",
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background overflow-hidden relative">
+    <div className="liquid-bg w-full h-full overflow-hidden">
       {/* Render different modes based on window size */}
       <AnimatePresence mode="sync" initial={false}>
         {mode === "mini" && (
-          <motion.div
-            key="mini"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-screen"
-          >
-            <MiniMode
-              timeLeft={timeLeft}
-              isRunning={isRunning}
-              activeTab={activeTab}
-              onStart={handleStart}
-              onPause={handlePause}
-              onNext={handleNext}
-              getProgress={getProgress}
-              formatTime={formatTime}
-              currentQuote={getCurrentQuoteObject()}
-              youtubeUrl={youtubeUrl}
-              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
-              customTimes={customTimes}
-              onWorkTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, focus: value }))
-              }
-              onShortBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
-              }
-              onLongBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
-              }
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              onAnimationComplete={handleQuoteAnimationComplete}
-              onYouTubeUrlChange={setYoutubeUrl}
-            />
+          <motion.div key="mini" {...fade}>
+            <MiniMode {...timerProps} />
           </motion.div>
         )}
 
         {mode === "small" && (
-          <motion.div
-            key="small"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-screen"
-          >
-            <SmallMode
-              timeLeft={timeLeft}
-              isRunning={isRunning}
-              activeTab={activeTab}
-              onStart={handleStart}
-              onPause={handlePause}
-              onNext={handleNext}
-              getProgress={getProgress}
-              formatTime={formatTime}
-              currentQuote={getCurrentQuoteObject()}
-              youtubeUrl={youtubeUrl}
-              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
-              customTimes={customTimes}
-              onWorkTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, focus: value }))
-              }
-              onShortBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
-              }
-              onLongBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
-              }
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              onAnimationComplete={handleQuoteAnimationComplete}
-              onYouTubeUrlChange={setYoutubeUrl}
-            />
+          <motion.div key="small" {...fade}>
+            <SmallMode {...timerProps} />
           </motion.div>
         )}
 
         {mode === "compact" && (
-          <motion.div
-            key="compact"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-screen"
-          >
+          <motion.div key="compact" {...fade}>
             <CompactMode
-              timeLeft={timeLeft}
-              isRunning={isRunning}
-              activeTab={activeTab}
-              customTimes={customTimes}
-              currentQuote={getCurrentQuoteObject()}
-              onStart={handleStart}
-              onPause={handlePause}
-              onNext={handleNext}
+              {...timerProps}
               onTabChange={setActiveTab}
-              getProgress={getProgress}
-              formatTime={formatTime}
               getTabIcon={getTabIcon}
-              youtubeUrl={youtubeUrl}
-              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
-              onWorkTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, focus: value }))
-              }
-              onShortBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
-              }
-              onLongBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
-              }
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              onYouTubeUrlChange={setYoutubeUrl}
-              onAnimationComplete={handleQuoteAnimationComplete}
             />
           </motion.div>
         )}
 
         {mode === "tall" && (
-          <motion.div
-            key="tall"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-screen "
-          >
+          <motion.div key="tall" {...fade}>
             <TallMode
+              {...settingsProps}
               timeLeft={timeLeft}
               isRunning={isRunning}
               currentTab={activeTab}
@@ -336,55 +229,27 @@ function AppContent() {
               onPlayPause={isRunning ? handlePause : handleStart}
               onSkip={handleNext}
               onReset={() => {
-                setTimeLeft(customTimes[activeTab] * 60);
+                setTimeLeft(customTimes[activeTab as keyof typeof customTimes] * 60);
                 setIsRunning(false);
               }}
-              onMinimize={() => getCurrentWindow().minimize()}
-              onSettings={() => {}}
               currentQuote={getCurrentQuoteObject()}
               isVietnamese={isVietnamese}
               workTime={customTimes.focus}
               shortBreakTime={customTimes.shortBreak}
               longBreakTime={customTimes.longBreak}
-              onWorkTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, focus: value }))
-              }
-              onShortBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
-              }
-              onLongBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
-              }
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              customTimes={customTimes}
-              youtubeUrl={youtubeUrl}
-              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
             />
           </motion.div>
         )}
 
         {mode === "full" && (
-          <motion.div
-            key="full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="h-screen "
-          >
+          <motion.div key="full" {...fade}>
             <FullMode
+              {...settingsProps}
               timeLeft={timeLeft}
               isRunning={isRunning}
               activeTab={activeTab}
-              customTimes={customTimes}
               isVietnamese={isVietnamese}
               isYouTubeExpanded={isYouTubeExpanded}
-              youtubeUrl={youtubeUrl}
               newYoutubeUrl={newYoutubeUrl}
               editingTime={editingTime}
               tempTime={tempTime}
@@ -398,25 +263,9 @@ function AppContent() {
               onTimeEdit={handleTimeEdit}
               onTimeSave={handleTimeSave}
               onTempTimeChange={setTempTime}
-              onWorkTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, focus: value }))
-              }
-              onShortBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, shortBreak: value }))
-              }
-              onLongBreakTimeChange={(value) =>
-                setCustomTimes((prev) => ({ ...prev, longBreak: value }))
-              }
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
               getProgress={getProgress}
               formatTime={formatTime}
               getTabIcon={getTabIcon}
-              getYouTubeEmbedUrl={getYouTubeEmbedUrl}
             />
           </motion.div>
         )}

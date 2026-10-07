@@ -1,10 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, X, Target, Zap, Star
+    Headphones, Maximize2, Minimize2, Minus, MinusIcon, MoreVertical, Play, Plus, Settings, Timer, X, Target, Zap, Star, Repeat
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { invoke } from '@tauri-apps/api/core';
+import { closeWindow, minimizeWindow } from '../lib/utils';
 
 import quotesData from '../quotes/quotes.json';
 import { YouTubeAnchor } from '../player/YouTubeOverlay';
@@ -13,6 +14,9 @@ import { Card, CardContent, CardHeader } from '../ui/card';
 import { Input } from '../ui/input';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import SettingsPanel from './SettingsPanel';
+import { LoopControl } from './LoopControl';
+import { useYouTubeOverlay } from '../player/YouTubeOverlay';
+import { useDropdownPosition } from '../hooks/useDropdownPosition';
 
 interface FullModeProps {
   timeLeft: number;
@@ -46,7 +50,7 @@ interface FullModeProps {
   setRoundsPerCycle: (value: number) => void;
   getProgress: () => number;
   formatTime: (seconds: number) => string;
-  getTabIcon: (tab: string) => JSX.Element;
+  getTabIcon: (tab: string) => React.ReactNode;
   getYouTubeEmbedUrl: (url: string) => string;
 }
 
@@ -92,6 +96,10 @@ export function FullMode({
   const settingsRef = useRef<HTMLDivElement>(null);
   const [animationKey, setAnimationKey] = useState(0);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const [showLoopControl, setShowLoopControl] = useState(false);
+  const loopBtnRef = useRef<HTMLButtonElement>(null);
+  const loopPos = useDropdownPosition(loopBtnRef, showLoopControl, { width: 440, gap: 8, align: 'end' });
+  const { videoDuration, loopConfig } = useYouTubeOverlay();
 
   // Get current quote from local state instead of props
   const getCurrentQuote = () => {
@@ -193,13 +201,7 @@ export function FullMode({
               <div className="flex-1 h-full" data-tauri-drag-region></div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke('minimize_window');
-                    } catch (error) {
-                      console.error('Error minimizing window:', error);
-                    }
-                  }}
+                  onClick={minimizeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-yellow-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Minimize window"
                   data-tauri-drag-region="false"
@@ -207,13 +209,7 @@ export function FullMode({
                   <MinusIcon className="h-3 w-3" />
                 </button>
                 <button
-                  onClick={async () => {
-                    try {
-                      await invoke('close_window');
-                    } catch (error) {
-                      console.error('Error closing window:', error);
-                    }
-                  }}
+                  onClick={closeWindow}
                   className="w-5 h-5 rounded-full bg-gray-600/80 hover:bg-red-500 flex items-center justify-center text-white transition-colors"
                   aria-label="Close window"
                   data-tauri-drag-region="false"
@@ -227,7 +223,7 @@ export function FullMode({
       </AnimatePresence>
 
       {/* Main FullMode Interface */}
-      <Card className="flex-1 flex flex-col overflow-hidden shadow-2xl border border-gray-600 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800">
+      <Card className="flex-1 flex flex-col overflow-hidden shadow-2xl border border-white/15 bg-[rgba(255,255,255,0.04)]">
         <CardHeader className="pb-4 pt-10">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
@@ -236,7 +232,7 @@ export function FullMode({
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white" style={{ color: "#1DB954" }}>Let's Focus To Your Dreams</h1>
-                <p className="text-xs text-slate-400">111Stay productive, stay focused</p>
+                <p className="text-xs text-slate-400">Stay productive, stay focused</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -280,7 +276,7 @@ export function FullMode({
                       }
                     }}
                     placeholder="Paste YouTube URL here..."
-                    className="flex-1 h-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    className="flex-1 h-10 bg-white/10 border-white/15 text-white placeholder-gray-400"
                   />
                   <Button
                     onClick={onYouTubeUrlChange}
@@ -289,11 +285,23 @@ export function FullMode({
                   >
                     <Play className="w-4 h-4" />
                   </Button>
+                  <Button
+                    ref={loopBtnRef}
+                    onClick={() => setShowLoopControl(!showLoopControl)}
+                    size="sm"
+                    className={`h-10 w-10 p-0 flex items-center justify-center ${
+                      showLoopControl || loopConfig?.loopEnabled || loopConfig?.loopPortion
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : 'bg-gray-600 hover:bg-gray-500 text-white'
+                    }`}
+                  >
+                    <Repeat className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
 
               {/* YouTube iframe - Much larger */}
-              <div className="flex-1 min-h-[300px] rounded-lg overflow-hidden bg-gray-700 p-2">
+              <div className="flex-1 min-h-[300px] rounded-lg overflow-hidden bg-white/10 p-2 relative">
                 <YouTubeAnchor className="w-full h-full rounded-md" />
               </div>
             </div>
@@ -405,7 +413,7 @@ export function FullMode({
                         type="number"
                         value={tempTime}
                         onChange={(e) => onTempTimeChange(e.target.value)}
-                        className="w-20 h-10 text-center bg-gray-700 border-gray-600 text-white"
+                        className="w-20 h-10 text-center bg-white/10 border-white/15 text-white"
                         min="1"
                       />
                       <span className="text-sm text-gray-300">min</span>
@@ -557,41 +565,101 @@ export function FullMode({
       </Card>
 
       {/* Settings Panel Dropdown */}
-      <AnimatePresence mode="wait" initial={false}>
-        {showSettings && (
-          <motion.div
-            ref={settingsRef}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute top-20 right-4 w-80 bg-gray-800 rounded-2xl shadow-2xl border border-gray-600 p-6 z-[1001]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SettingsPanel
-              onClose={() => setShowSettings(false)}
-              roundsPerCycle={roundsPerCycle}
-              setRoundsPerCycle={setRoundsPerCycle}
-              customTimes={customTimes}
-              onWorkTimeChange={onWorkTimeChange}
-              onShortBreakTimeChange={onShortBreakTimeChange}
-              onLongBreakTimeChange={onLongBreakTimeChange}
-              quoteSpeed="Normal"
-              setQuoteSpeed={() => {}}
-              showQuotes={showQuotes}
-              setShowQuotes={setShowQuotes}
-              autoStartNext={autoStartNext}
-              setAutoStartNext={setAutoStartNext}
-              autoStartBreakType={autoStartBreakType}
-              setAutoStartBreakType={setAutoStartBreakType}
-              youtubeUrl={youtubeUrl}
-              onYouTubeUrlChange={() => {}}
-              width="240px"
-              height="100%"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {createPortal(
+        <AnimatePresence mode="wait">
+          {showSettings && (
+            <>
+              {/* Soft dimmed backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                onClick={() => setShowSettings(false)}
+              />
+              <motion.div
+                ref={settingsRef}
+                initial={{ opacity: 0, y: -5, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -5, scale: 0.96 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="fixed top-12 right-6 sm:w-[460px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-4rem)] z-[9999] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SettingsPanel
+                  onClose={() => setShowSettings(false)}
+                  roundsPerCycle={roundsPerCycle}
+                  setRoundsPerCycle={setRoundsPerCycle}
+                  customTimes={customTimes}
+                  onWorkTimeChange={onWorkTimeChange}
+                  onShortBreakTimeChange={onShortBreakTimeChange}
+                  onLongBreakTimeChange={onLongBreakTimeChange}
+                  showQuotes={showQuotes}
+                  setShowQuotes={setShowQuotes}
+                  autoStartNext={autoStartNext}
+                  setAutoStartNext={setAutoStartNext}
+                  autoStartBreakType={autoStartBreakType}
+                  setAutoStartBreakType={setAutoStartBreakType}
+                  youtubeUrl={youtubeUrl}
+                  height="100%"
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Loop Control Overlay */}
+      {createPortal(
+        <AnimatePresence mode="wait">
+          {showLoopControl && loopPos && (
+            <>
+              {/* Soft dimmed backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 bg-black/45 backdrop-blur-[2px] z-[9998]"
+                onClick={() => setShowLoopControl(false)}
+              />
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: loopPos.placement === 'top' ? 8 : -8,
+                  scale: 0.98,
+                }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  y: loopPos.placement === 'top' ? 8 : -8,
+                  scale: 0.98,
+                }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                style={{
+                  position: 'fixed',
+                  top: loopPos.top,
+                  left: loopPos.left,
+                  width: loopPos.width,
+                  maxHeight: loopPos.maxHeight,
+                }}
+                className="z-[9999] pointer-events-auto flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <LoopControl
+                  onClose={() => setShowLoopControl(false)}
+                  videoDuration={videoDuration}
+                  style={{ maxHeight: loopPos.maxHeight }}
+                  className="max-h-full"
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
